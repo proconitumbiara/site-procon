@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ProcQ | Procon Itumbiara",
+  title: "Procon Itumbiara",
   description: "Desenvolvido por Procon Itumbiara",
 };
 
