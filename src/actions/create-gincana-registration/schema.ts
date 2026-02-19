@@ -15,8 +15,8 @@ const CLOTHING_SIZES = [
   "G BabyLook",
   "GG BabyLook",
   "XG BabyLook",
-  "P",
   "PP",
+  "P",
   "M",
   "G",
   "GG",
@@ -36,7 +36,10 @@ export const createGincanaRegistrationSchema = z
     participantBirthDate: z
       .string()
       .min(1, "Por favor, informe sua data de nascimento")
-      .refine((val) => !Number.isNaN(Date.parse(val)), "Informe uma data válida"),
+      .refine(
+        (val) => !Number.isNaN(Date.parse(val)),
+        "Informe uma data válida",
+      ),
     participantSchool: z.enum(SCHOOLS, {
       message: "Por favor, selecione a escola em que estuda ou trabalha",
     }),
@@ -69,19 +72,22 @@ export const createGincanaRegistrationSchema = z
     {
       message: "Por favor, selecione a série em que você estuda",
       path: ["studentPeriod"],
-    }
+    },
   )
   .refine(
     (data) => {
       if (data.participantCategory === "employee") {
-        return data.employeePosition != null && data.employeePosition.trim().length > 0;
+        return (
+          data.employeePosition != null &&
+          data.employeePosition.trim().length > 0
+        );
       }
       return true;
     },
     {
       message: "Por favor, informe seu cargo ou função na escola",
       path: ["employeePosition"],
-    }
+    },
   );
 
 export type CreateGincanaRegistrationInput = z.infer<
