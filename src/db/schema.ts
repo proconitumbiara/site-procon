@@ -252,11 +252,8 @@ export const guardianAuthorizationDocumentTable = pgTable(
       .notNull()
       .references(() => guardianTable.id, { onDelete: "cascade" }),
     documentType: text("document_type").notNull(),
-    documentVersion: text("document_version").notNull(),
     documentHash: text("document_hash").notNull(),
     fileUrl: text("file_url").notNull(),
-    mimeType: text("mime_type").notNull(),
-    signedAt: timestamp("signed_at"),
     uploadedAt: timestamp("uploaded_at").notNull(),
     uploadedBy: text("uploaded_by"),
     status: text("status").notNull(),

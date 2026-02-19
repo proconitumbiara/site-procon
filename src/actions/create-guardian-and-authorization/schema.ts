@@ -7,7 +7,6 @@ export const createGuardianAndAuthorizationSchema = z.object({
   phone: z.string().trim().min(1, "Telefone é obrigatório"),
   relationship: z.string().trim().min(1, "Parentesco é obrigatório"),
   fileUrl: z.string().url("URL do arquivo inválida"),
-  mimeType: z.literal("application/pdf"),
 });
 
 export type CreateGuardianAndAuthorizationInput = z.infer<

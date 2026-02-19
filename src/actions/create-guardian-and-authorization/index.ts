@@ -1,5 +1,6 @@
 "use server";
 
+import { createHash } from "crypto";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { eq } from "drizzle-orm";
@@ -15,9 +16,16 @@ import { actionClient } from "@/lib/next-safe-action";
 
 import { createGuardianAndAuthorizationSchema } from "./schema";
 
-const DOCUMENT_TYPE = "image_use";
-const DOCUMENT_VERSION = "1.0";
-const DOCUMENT_HASH = "gincana-authorization-v1";
+const DOCUMENT_TYPE = "PDF";
+
+async function computeDocumentHash(fileUrl: string): Promise<string> {
+  const response = await fetch(fileUrl);
+  if (!response.ok) {
+    throw new Error("Não foi possível obter o arquivo para gerar o hash.");
+  }
+  const buffer = Buffer.from(await response.arrayBuffer());
+  return createHash("sha256").update(buffer).digest("hex");
+}
 
 export const createGuardianAndAuthorization = actionClient
   .schema(createGuardianAndAuthorizationSchema)
@@ -45,15 +53,19 @@ export const createGuardianAndAuthorization = actionClient
     }
 
     const now = new Date();
+    let documentHash: string;
+    try {
+      documentHash = await computeDocumentHash(parsedInput.fileUrl);
+    } catch {
+      return { error: { message: "Falha ao processar o documento (hash)." } };
+    }
 
     await db.insert(guardianAuthorizationDocumentTable).values({
       registrationId: parsedInput.registrationId,
       guardianId: guardian.id,
       documentType: DOCUMENT_TYPE,
-      documentVersion: DOCUMENT_VERSION,
-      documentHash: DOCUMENT_HASH,
+      documentHash,
       fileUrl: parsedInput.fileUrl,
-      mimeType: parsedInput.mimeType,
       uploadedAt: now,
       uploadedBy: session.user.id,
       status: "approved",
