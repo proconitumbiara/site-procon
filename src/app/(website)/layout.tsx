@@ -6,7 +6,6 @@ import { ThemeProvider } from "next-themes";
 
 import AccessibilityPanel from "@/components/website/global/AccessibilityPanel";
 import ForceLightTheme from "@/components/website/global/ForceLightTheme";
-import Popup from "@/components/website/home/Popup";
 import { AccessibilityProvider } from "@/lib/AccessibilityContext";
 
 const montserrat = Montserrat({
@@ -55,7 +54,7 @@ export default function RootLayout({
             </a>
             {children}
             <AccessibilityPanel />
-            <Popup />
+            {/* <Popup /> */}
           </AccessibilityProvider>
         </ThemeProvider>
       </body>

@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 
 interface LegalDialogProps {
-  type: "privacy" | "terms" | "accessibility";
+  type: "privacy" | "terms" | "accessibility" | "image";
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -27,6 +27,8 @@ export default function LegalDialog({
         return <TermsContent />;
       case "accessibility":
         return <AccessibilityContent />;
+      case "image":
+        return <ImageContent />;
       default:
         return null;
     }
@@ -40,6 +42,8 @@ export default function LegalDialog({
         return "Termos de Uso";
       case "accessibility":
         return "Acessibilidade";
+      case "image":
+        return "Termo de Autorização de Uso de Imagem";
       default:
         return "";
     }
@@ -53,6 +57,8 @@ export default function LegalDialog({
         return "Termos e condições de uso do site do Procon Itumbiara.";
       case "accessibility":
         return "Informações sobre os mecanismos de acessibilidade disponíveis no site.";
+      case "image":
+        return "Autorização para uso de imagens gravadas durante os eventos do projeto.";
       default:
         return "";
     }
@@ -600,6 +606,80 @@ function AccessibilityContent() {
             <strong>Horário de Atendimento:</strong> Segunda a Sexta, 7h às 13h
           </p>
         </div>
+      </section>
+    </div>
+  );
+}
+
+function ImageContent() {
+  return (
+    <div className="space-y-6">
+      <section>
+        <h3 className="text-foreground mb-3 text-base font-semibold">
+          1. Objeto da Autorização
+        </h3>
+        <p className="text-muted-foreground">
+          Ao aceitar este termo, o participante ou seu responsável legal autoriza
+          o Procon Itumbiara - Fundo Municipal de Proteção e Defesa do Consumidor
+          a utilizar, gratuitamente e por tempo indeterminado, imagens (fotos e
+          vídeos) em que figure, gravadas durante os eventos do projeto Gincana
+          Procon nas Escolas, para fins de divulgação institucional, educação
+          para o consumo, campanhas, redes sociais, site e materiais impressos ou
+          digitais.
+        </p>
+      </section>
+
+      <section>
+        <h3 className="text-foreground mb-3 text-base font-semibold">
+          2. Formas de Utilização
+        </h3>
+        <p className="text-muted-foreground mb-2">
+          As imagens poderão ser utilizadas nos seguintes meios:
+        </p>
+        <ul className="text-muted-foreground ml-6 list-disc space-y-1">
+          <li>Site e redes sociais do Procon Itumbiara</li>
+          <li>Materiais de divulgação e campanhas educativas</li>
+          <li>Relatórios e publicações institucionais</li>
+          <li>Imprensa e mídia, quando de interesse público</li>
+        </ul>
+      </section>
+
+      <section>
+        <h3 className="text-foreground mb-3 text-base font-semibold">
+          3. Direitos do Titular
+        </h3>
+        <p className="text-muted-foreground">
+          O participante ou responsável poderá revogar esta autorização a qualquer
+          momento, mediante solicitação formal ao Procon Itumbiara. A revogação
+          não afetará utilizações já realizadas anteriormente ao pedido.
+        </p>
+      </section>
+
+      <section>
+        <h3 className="text-foreground mb-3 text-base font-semibold">
+          4. Contato
+        </h3>
+        <p className="text-muted-foreground mb-2">
+          Para revogar a autorização ou esclarecer dúvidas:
+        </p>
+        <div className="text-muted-foreground space-y-1">
+          <p>
+            <strong>E-mail:</strong> proconitumbiara@gmail.com
+          </p>
+          <p>
+            <strong>Telefone:</strong> (64) 3432-1215
+          </p>
+          <p>
+            <strong>Endereço:</strong> Av. Porto Nacional, 495 - CEP: 75528-122
+            - Itumbiara/GO
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <p className="text-muted-foreground text-xs italic">
+          Última atualização: {new Date().toLocaleDateString("pt-BR")}
+        </p>
       </section>
     </div>
   );

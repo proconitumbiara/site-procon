@@ -193,6 +193,76 @@ export const registrationCodesTable = pgTable("registration_codes", {
   usedAt: timestamp("used_at"),
 });
 
+//Tabela de inscrições de participantes
+export const registrationTable = pgTable("registration", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  projectId: uuid("project_id")
+    .notNull()
+    .references(() => projectsTable.id, { onDelete: "cascade" }),
+  participantFullName: text("participant_full_name").notNull(),
+  participantPhone: text("participant_phone").notNull(),
+  participantBirthDate: date("participant_birth_date").notNull(),
+  participantSchool: text("participant_school").notNull(),
+  participantCategory: text("participant_category").notNull(),
+  clothingSize: text("clothing_size"),
+  studentPeriod: text("student_period"),
+  employeePosition: text("employee_position"),
+  status: text("status").notNull(),
+});
+
+//Tabela de assentimentos/termos de inscrição
+export const registrationAssentTable = pgTable("registration_assent", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  registrationId: uuid("registration_id")
+    .notNull()
+    .references(() => registrationTable.id, { onDelete: "cascade" }),
+  termsVersion: text("terms_version").notNull(),
+  termsHash: text("terms_hash").notNull(),
+  assentedAt: timestamp("assented_at").notNull(),
+  assentMethod: text("assent_method").notNull(),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  source: text("source"),
+  pageUrl: text("page_url"),
+  locale: text("locale"),
+});
+
+//Tabela de responsáveis/guardiões
+export const guardianTable = pgTable("guardian", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  fullName: text("full_name").notNull(),
+  document: text("document").notNull(),
+  phone: text("phone").notNull(),
+  relationship: text("relationship").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+//Tabela de documentos de autorização do responsável
+export const guardianAuthorizationDocumentTable = pgTable(
+  "guardian_authorization_document",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    registrationId: uuid("registration_id")
+      .notNull()
+      .references(() => registrationTable.id, { onDelete: "cascade" }),
+    guardianId: uuid("guardian_id")
+      .notNull()
+      .references(() => guardianTable.id, { onDelete: "cascade" }),
+    documentType: text("document_type").notNull(),
+    documentVersion: text("document_version").notNull(),
+    documentHash: text("document_hash").notNull(),
+    fileUrl: text("file_url").notNull(),
+    mimeType: text("mime_type").notNull(),
+    signedAt: timestamp("signed_at"),
+    uploadedAt: timestamp("uploaded_at").notNull(),
+    uploadedBy: text("uploaded_by"),
+    status: text("status").notNull(),
+  },
+);
+
 //Relationships
 
 //Price searches relationships
@@ -237,6 +307,50 @@ export const priceSearchItemsRelations = relations(
     supplier: one(suppliersTable, {
       fields: [priceSearchItemsTable.supplierId],
       references: [suppliersTable.id],
+    }),
+  }),
+);
+
+//Registration relationships
+export const registrationRelations = relations(
+  registrationTable,
+  ({ one, many }) => ({
+    project: one(projectsTable, {
+      fields: [registrationTable.projectId],
+      references: [projectsTable.id],
+    }),
+    assents: many(registrationAssentTable),
+    guardianAuthorizationDocuments: many(guardianAuthorizationDocumentTable),
+  }),
+);
+
+//Registration assent relationships
+export const registrationAssentRelations = relations(
+  registrationAssentTable,
+  ({ one }) => ({
+    registration: one(registrationTable, {
+      fields: [registrationAssentTable.registrationId],
+      references: [registrationTable.id],
+    }),
+  }),
+);
+
+//Guardian relationships
+export const guardianRelations = relations(guardianTable, ({ many }) => ({
+  authorizationDocuments: many(guardianAuthorizationDocumentTable),
+}));
+
+//Guardian authorization document relationships
+export const guardianAuthorizationDocumentRelations = relations(
+  guardianAuthorizationDocumentTable,
+  ({ one }) => ({
+    registration: one(registrationTable, {
+      fields: [guardianAuthorizationDocumentTable.registrationId],
+      references: [registrationTable.id],
+    }),
+    guardian: one(guardianTable, {
+      fields: [guardianAuthorizationDocumentTable.guardianId],
+      references: [guardianTable.id],
     }),
   }),
 );
