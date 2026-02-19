@@ -4,7 +4,12 @@ import { extname } from "path";
 
 import { auth } from "@/lib/auth";
 
-const PDF_ONLY_FOLDERS = new Set(["complaints", "consultations", "denunciations"]);
+const PDF_ONLY_FOLDERS = new Set([
+  "complaints",
+  "consultations",
+  "denunciations",
+  "gincana-authorization",
+]);
 const IMAGE_ONLY_FOLDERS = new Set(["news", "projects", "services"]);
 const FLEX_FOLDERS = new Set(["temp"]);
 const ALLOWED_FOLDERS = new Set([

@@ -2,37 +2,24 @@
 
 import { headers } from "next/headers";
 
+import { GINCANA_PROJECT_ID } from "@/constants/gincana";
 import { db } from "@/db";
 import {
   registrationAssentTable,
   registrationTable,
 } from "@/db/schema";
+import { calculateAge } from "@/lib/formatters/date";
 import { actionClient } from "@/lib/next-safe-action";
 
 import { createGincanaRegistrationSchema } from "./schema";
 
-const GINCANA_PROJECT_ID = "217e4b87-8a14-4025-9782-209aabd307a0" as const;
 const TERMS_VERSION = "1.0";
 const TERMS_HASH = "gincana-2024-v1";
-
-function calculateAge(birthDateStr: string): number {
-  const birth = new Date(birthDateStr);
-  const today = new Date();
-  let age = today.getFullYear() - birth.getFullYear();
-  const monthDiff = today.getMonth() - birth.getMonth();
-  if (
-    monthDiff < 0 ||
-    (monthDiff === 0 && today.getDate() < birth.getDate())
-  ) {
-    age -= 1;
-  }
-  return age;
-}
 
 export const createGincanaRegistration = actionClient
   .schema(createGincanaRegistrationSchema)
   .action(async ({ parsedInput }) => {
-    const age = calculateAge(parsedInput.participantBirthDate);
+    const age = calculateAge(new Date(parsedInput.participantBirthDate));
     const status =
       age >= 18 ? "completed" : "pending_guardian_autorization";
 

@@ -5,6 +5,7 @@ import {
   HammerIcon,
   LogOutIcon,
   Newspaper,
+  School,
   Search,
   Users,
 } from "lucide-react";
@@ -54,6 +55,14 @@ const itemsWebSite = [
     title: "Serviços",
     url: "/gerenciar-servicos",
     icon: HammerIcon,
+  },
+];
+
+const itemsFormularios = [
+  {
+    title: "Gincana Procon nas Escolas",
+    url: "/gerenciar-gincana-procon-nas-escolas",
+    icon: School,
   },
 ];
 
@@ -114,6 +123,26 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {isAdministrator && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Formulários</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {itemsFormularios.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={pathname === item.url}>
+                      <Link href={item.url}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
         {isAdministrator && (
           <SidebarGroup>
