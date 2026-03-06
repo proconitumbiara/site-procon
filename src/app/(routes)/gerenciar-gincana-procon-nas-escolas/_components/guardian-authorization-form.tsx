@@ -49,7 +49,6 @@ const RELATIONSHIP_OPTIONS = [
 const formSchema = createGuardianAndAuthorizationSchema.omit({
   registrationId: true,
   fileUrl: true,
-  mimeType: true,
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -133,7 +132,6 @@ export default function GuardianAuthorizationForm({
         phone: values.phone,
         relationship: values.relationship,
         fileUrl,
-        mimeType: "application/pdf",
       });
     } catch (err) {
       toast.error(
