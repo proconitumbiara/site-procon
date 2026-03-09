@@ -121,11 +121,11 @@ export default function Footer() {
               <p>
                 <span className="sr-only">E-mail:</span>
                 <a
-                  href="mailto:proconitumbiara@gmail.com"
+                  href="mailto:procon@itumbiara.go.gov.br"
                   className="hover:text-foreground focus:ring-primary rounded-sm no-underline transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none"
-                  aria-label="Enviar e-mail para proconitumbiara@gmail.com"
+                  aria-label="Enviar e-mail para procon@itumbiara.go.gov.br"
                 >
-                  proconitumbiara@gmail.com
+                  procon@itumbiara.go.gov.br
                 </a>
               </p>
             </div>
