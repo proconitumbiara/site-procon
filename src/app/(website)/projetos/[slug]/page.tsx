@@ -74,7 +74,7 @@ export default async function ProjetoDetailPage({
           <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:gap-6">
             {/* Logo do projeto */}
             <div className="shrink-0">
-              <div className="bg-muted/50 relative flex h-32 w-32 items-center justify-center overflow-hidden rounded-lg sm:h-40 sm:w-40">
+              <div className="bg-muted/50 relative flex h-32 w-32 items-center justify-center overflow-hidden mix-blend-multiply rounded-lg sm:h-40 sm:w-40">
                 <Image
                   src={projeto.coverImageUrl || DEFAULT_PROJECT_IMAGE}
                   alt={projeto.title}

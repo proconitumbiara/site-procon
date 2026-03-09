@@ -81,13 +81,13 @@ export default async function PriceSearchDetailPage({
           <article className="mx-auto max-w-6xl">
             {/* Imagem principal */}
             {priceSearch.coverImageUrl && (
-              <div className="relative mb-6 h-64 w-full overflow-hidden rounded-lg sm:mb-8 sm:h-80 md:h-96">
+              <div className="relative mb-6 h-64 w-full overflow-hidden rounded-lg sm:mb-8 sm:h-80 md:h-96 mix-blend-multiply">
                 <Image
                   src={priceSearch.coverImageUrl}
                   alt={priceSearch.title}
                   fill
                   className="object-cover"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 1152px"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 1152px mix-blend-multiply"
                   priority
                 />
               </div>

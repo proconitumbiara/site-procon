@@ -32,7 +32,7 @@ export default function PriceSearchCard({
           src={image}
           alt={altText}
           fill
-          className="object-contain transition-all duration-300 group-hover:scale-110 md:grayscale md:group-hover:grayscale-0"
+          className="object-contain transition-all duration-300 group-hover:scale-110 md:grayscale mix-blend-multiply md:group-hover:grayscale-0"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
       </div>

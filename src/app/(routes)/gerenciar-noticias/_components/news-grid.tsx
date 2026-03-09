@@ -36,7 +36,6 @@ const truncateTitle = (title: string, maxWords: number = 6) => {
 
 const NewsGrid = ({ news }: NewsGridProps) => {
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
 
   if (!news.length) {
     return (
@@ -54,24 +53,8 @@ const NewsGrid = ({ news }: NewsGridProps) => {
         <Card key={item.id} className="h-full border">
           <CardHeader className="space-y-4 border-b pb-4">
             <div className="relative h-48 w-full overflow-hidden rounded-md border">
-              {item.coverImageUrl && !imageErrors.has(item.id) && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={item.coverImageUrl}
-                  alt=""
-                  className="hidden"
-                  onError={() => {
-                    setImageErrors((prev) => new Set(prev).add(item.id));
-                  }}
-                  aria-hidden="true"
-                />
-              )}
               <Image
-                src={
-                  imageErrors.has(item.id) || !item.coverImageUrl
-                    ? DEFAULT_NEWS_IMAGE
-                    : item.coverImageUrl
-                }
+                src={item.coverImageUrl || DEFAULT_NEWS_IMAGE}
                 alt={`Capa da notícia ${item.title}`}
                 fill
                 className="object-cover"
