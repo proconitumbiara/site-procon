@@ -224,7 +224,7 @@ function PrivacyContent() {
         </p>
         <div className="text-muted-foreground space-y-1">
           <p>
-            <strong>E-mail:</strong> proconitumbiara@gmail.com
+            <strong>E-mail:</strong> procon@itumbiara.go.gov.br
           </p>
           <p>
             <strong>Telefone:</strong> (64) 3432-1215
@@ -241,7 +241,7 @@ function PrivacyContent() {
 
       <section>
         <p className="text-muted-foreground text-xs italic">
-          Última atualização: {new Date().toLocaleDateString("pt-BR")}
+          Última atualização: 09/03/2026
         </p>
       </section>
     </div>
@@ -388,7 +388,7 @@ function TermsContent() {
         </p>
         <div className="text-muted-foreground space-y-1">
           <p>
-            <strong>E-mail:</strong> proconitumbiara@gmail.com
+            <strong>E-mail:</strong> procon@itumbiara.go.gov.br
           </p>
           <p>
             <strong>Telefone:</strong> (64) 3432-1215
@@ -405,7 +405,7 @@ function TermsContent() {
 
       <section>
         <p className="text-muted-foreground text-xs italic">
-          Última atualização: {new Date().toLocaleDateString("pt-BR")}
+          Última atualização: 09/03/2026
         </p>
       </section>
     </div>
@@ -593,7 +593,7 @@ function AccessibilityContent() {
         </p>
         <div className="text-muted-foreground space-y-1">
           <p>
-            <strong>E-mail:</strong> proconitumbiara@gmail.com
+            <strong>E-mail:</strong> procon@itumbiara.go.gov.br
           </p>
           <p>
             <strong>Telefone:</strong> (64) 3432-1215
@@ -651,34 +651,13 @@ function ImageContent() {
         <p className="text-muted-foreground">
           O participante ou responsável poderá revogar esta autorização a qualquer
           momento, mediante solicitação formal ao Procon Itumbiara. A revogação
-          não afetará utilizações já realizadas anteriormente ao pedido.
+          não afetará utilizações já realizadas anteriormente ao pedido. Em caso de revogação, o participante ou responsável deverá informar o Procon Itumbiara via e-mail (procon@itumbiara.go.gov.br) para que as imagens sejam removidas dos meios de divulgação.
         </p>
-      </section>
-
-      <section>
-        <h3 className="text-foreground mb-3 text-base font-semibold">
-          4. Contato
-        </h3>
-        <p className="text-muted-foreground mb-2">
-          Para revogar a autorização ou esclarecer dúvidas:
-        </p>
-        <div className="text-muted-foreground space-y-1">
-          <p>
-            <strong>E-mail:</strong> proconitumbiara@gmail.com
-          </p>
-          <p>
-            <strong>Telefone:</strong> (64) 3432-1215
-          </p>
-          <p>
-            <strong>Endereço:</strong> Av. Porto Nacional, 495 - CEP: 75528-122
-            - Itumbiara/GO
-          </p>
-        </div>
       </section>
 
       <section>
         <p className="text-muted-foreground text-xs italic">
-          Última atualização: {new Date().toLocaleDateString("pt-BR")}
+          Última atualização: 09/03/2026
         </p>
       </section>
     </div>

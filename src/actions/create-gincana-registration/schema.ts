@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const PARTICIPANT_CATEGORY = ["student", "employee"] as const;
-const STUDENT_PERIODS = ["9º Ano", "8º Ano"] as const;
+const STUDENT_PERIODS = ["8º Ano", "9º Ano"] as const;
 const SCHOOLS = [
   "CEPI Adoniro Martins de Andrade",
   "CEPI Dom Veloso",

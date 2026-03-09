@@ -10,6 +10,9 @@ import {
 } from "@/db/schema";
 import { calculateAge } from "@/lib/formatters/date";
 import { actionClient } from "@/lib/next-safe-action";
+import { and, eq, ilike } from "drizzle-orm";
+
+import { formatPersonName } from "@/lib/formatters/contact";
 
 import { createGincanaRegistrationSchema } from "./schema";
 
@@ -19,6 +22,28 @@ const TERMS_HASH = "gincana-2024-v1";
 export const createGincanaRegistration = actionClient
   .schema(createGincanaRegistrationSchema)
   .action(async ({ parsedInput }) => {
+    const normalizedName = formatPersonName(parsedInput.participantFullName);
+
+    const existingRegistration = await db
+      .select({ id: registrationTable.id })
+      .from(registrationTable)
+      .where(
+        and(
+          eq(registrationTable.projectId, GINCANA_PROJECT_ID),
+          ilike(registrationTable.participantFullName, normalizedName),
+        ),
+      )
+      .limit(1);
+
+    if (existingRegistration.length > 0) {
+      return {
+        error: {
+          message:
+            "Já existe uma inscrição cadastrada com este nome. Caso acredite que isso é um erro, entre em contato com o Procon.",
+        },
+      };
+    }
+
     const age = calculateAge(new Date(parsedInput.participantBirthDate));
     const status =
       age >= 18 ? "completed" : "pending_guardian_autorization";
@@ -34,7 +59,7 @@ export const createGincanaRegistration = actionClient
       .insert(registrationTable)
       .values({
         projectId: GINCANA_PROJECT_ID,
-        participantFullName: parsedInput.participantFullName.trim(),
+        participantFullName: normalizedName,
         participantPhone: parsedInput.participantPhone.trim(),
         participantBirthDate: parsedInput.participantBirthDate,
         participantSchool: parsedInput.participantSchool.trim(),

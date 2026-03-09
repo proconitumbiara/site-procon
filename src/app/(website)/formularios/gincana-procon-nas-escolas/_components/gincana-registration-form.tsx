@@ -325,7 +325,7 @@ export function GincanaRegistrationForm() {
                   </FormControl>
                   <div className="flex-1 space-y-1 leading-none">
                     <FormLabel className="cursor-pointer font-normal">
-                      Aceito o uso de imagens pessoais gravadas durante os eventos do projeto. <span className="text-red-500">*</span>
+                      Aceito o uso de imagens pessoais registradas durante os eventos do projeto. <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormMessage />
                   </div>

@@ -1,3 +1,36 @@
+// Preposições e conjunções que devem permanecer em minúsculo no meio do nome
+const LOWERCASE_PARTICLES = new Set([
+  "da", "de", "di", "do", "du",
+  "das", "dos", "des",
+  "e", "y",
+]);
+
+/**
+ * Normaliza um nome pessoal para o formato de título respeitando
+ * as partículas do português (da, de, do, das, dos, e...).
+ *
+ * Exemplos:
+ *   "JoÃO dA siLVA"  → "João da Silva"
+ *   "MARIA DAS DORES" → "Maria das Dores"
+ *   "ana e silva"    → "Ana e Silva"
+ */
+export const formatPersonName = (name?: string | null): string => {
+  if (!name) return "";
+
+  return name
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase()
+    .split(" ")
+    .map((word, index) => {
+      if (index !== 0 && LOWERCASE_PARTICLES.has(word)) {
+        return word;
+      }
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
+    .join(" ");
+};
+
 const formatBrazilianPhone = (digits: string) => {
   if (digits.length === 11) {
     return `(${digits.slice(0, 2)}) ${digits.slice(2, 3)} ${digits.slice(
