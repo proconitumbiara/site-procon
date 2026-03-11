@@ -23,7 +23,7 @@ const CLOTHING_SIZES = [
   "XG",
 ] as const;
 
-export const createGincanaRegistrationSchema = z
+export const createFormRegistrationSchema = z
   .object({
     formId: z.string().uuid("Informe um formulário válido."),
     participantFullName: z
@@ -91,8 +91,8 @@ export const createGincanaRegistrationSchema = z
     },
   );
 
-export type CreateGincanaRegistrationInput = z.infer<
-  typeof createGincanaRegistrationSchema
+export type CreateFormRegistrationInput = z.infer<
+  typeof createFormRegistrationSchema
 >;
 
 export { PARTICIPANT_CATEGORY, STUDENT_PERIODS, SCHOOLS, CLOTHING_SIZES };

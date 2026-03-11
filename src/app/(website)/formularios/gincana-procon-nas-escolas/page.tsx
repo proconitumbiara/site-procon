@@ -1,10 +1,20 @@
+import { notFound } from "next/navigation";
 
 import Section from "@/components/website/global/Section";
 import Image from "next/image";
+import { getFormBySlug } from "@/lib/data/content";
 
 import { GincanaRegistrationForm } from "./_components/gincana-registration-form";
 
-export default function GincanaProconNasEscolasPage() {
+const GINCANA_FORM_SLUG = "gincana-procon-nas-escolas";
+
+export default async function GincanaProconNasEscolasPage() {
+  const form = await getFormBySlug(GINCANA_FORM_SLUG);
+
+  if (!form || !form.isActive) {
+    notFound();
+  }
+
   return (
     <>
       <main id="main-content" role="main" aria-label="Conteúdo principal">
@@ -30,7 +40,7 @@ export default function GincanaProconNasEscolasPage() {
             title="Formulário de inscrição"
             description="Preencha todos os campos e aceite os termos para finalizar."
           >
-            <GincanaRegistrationForm />
+            <GincanaRegistrationForm formId={form.id} />
           </Section>
         </div>
       </main>

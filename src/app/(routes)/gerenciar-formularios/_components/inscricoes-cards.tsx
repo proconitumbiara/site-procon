@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { calculateAge } from "@/lib/formatters/date";
-import type { GincanaRegistrationWithGuardian } from "../types";
+import type { RegistrationWithGuardian } from "../types";
 
 import { RegistrationExpandedContent } from "./registration-expanded-content";
 
@@ -26,7 +26,7 @@ function getStatusLabel(status: string) {
 }
 
 interface InscricoesCardsProps {
-  registrations: GincanaRegistrationWithGuardian[];
+  registrations: RegistrationWithGuardian[];
   onGuardianAdded?: () => void;
 }
 
@@ -92,7 +92,9 @@ export default function InscricoesCards({
               <div className="flex flex-wrap gap-2">
                 <Badge variant="secondary">{reg.participantSchool}</Badge>
                 <Badge variant="outline">
-                  {reg.participantCategory === "student" ? "Aluno" : "Profissional"}
+                  {reg.participantCategory === "student"
+                    ? "Aluno"
+                    : "Profissional"}
                 </Badge>
                 <Badge variant="outline">{age} anos</Badge>
                 <Badge

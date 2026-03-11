@@ -71,12 +71,16 @@ export const createGuardianAndAuthorization = actionClient
       status: "approved",
     });
 
-    await db
+    const [registration] = await db
       .update(registrationTable)
       .set({ status: "completed" })
-      .where(eq(registrationTable.id, parsedInput.registrationId));
+      .where(eq(registrationTable.id, parsedInput.registrationId))
+      .returning({ formId: registrationTable.formId });
 
-    revalidatePath("/gerenciar-gincana-procon-nas-escolas");
+    revalidatePath("/gerenciar-formularios");
+    if (registration?.formId) {
+      revalidatePath(`/gerenciar-formularios/${registration.formId}`);
+    }
 
     return { success: true };
   });

@@ -2,7 +2,6 @@
 
 import { headers } from "next/headers";
 
-import { GINCANA_PROJECT_ID } from "@/constants/gincana";
 import { db } from "@/db";
 import {
   formsTable,
@@ -15,29 +14,31 @@ import { and, eq, ilike } from "drizzle-orm";
 
 import { formatPersonName } from "@/lib/formatters/contact";
 
-import { createGincanaRegistrationSchema } from "./schema";
+import { createFormRegistrationSchema } from "./schema";
 
 const TERMS_VERSION = "1.0";
-const TERMS_HASH = "gincana-2024-v1";
+const TERMS_HASH = "form-registration-v1";
 
-export const createGincanaRegistration = actionClient
-  .schema(createGincanaRegistrationSchema)
+export const createFormRegistration = actionClient
+  .schema(createFormRegistrationSchema)
   .action(async ({ parsedInput }) => {
-    const [form] = await db
-      .select({ id: formsTable.id })
-      .from(formsTable)
-      .where(
-        and(
-          eq(formsTable.id, parsedInput.formId),
-          eq(formsTable.projectId, GINCANA_PROJECT_ID),
-        ),
-      )
-      .limit(1);
+    const form = await db.query.formsTable.findFirst({
+      where: eq(formsTable.id, parsedInput.formId),
+      columns: { id: true, isActive: true },
+    });
 
     if (!form) {
       return {
         error: {
-          message: "Formulário inválido ou não pertence à Gincana Procon.",
+          message: "Formulário não encontrado.",
+        },
+      };
+    }
+
+    if (!form.isActive) {
+      return {
+        error: {
+          message: "Este formulário não está aceitando inscrições no momento.",
         },
       };
     }
@@ -111,7 +112,7 @@ export const createGincanaRegistration = actionClient
         assentMethod: "terms_and_privacy" as const,
         ipAddress,
         userAgent,
-        source: "gincana_procon_nas_escolas",
+        source: "form_registration",
         pageUrl: parsedInput.pageUrl ?? undefined,
         locale: parsedInput.locale ?? undefined,
       },
@@ -123,7 +124,7 @@ export const createGincanaRegistration = actionClient
         assentMethod: "image_use" as const,
         ipAddress,
         userAgent,
-        source: "gincana_procon_nas_escolas",
+        source: "form_registration",
         pageUrl: parsedInput.pageUrl ?? undefined,
         locale: parsedInput.locale ?? undefined,
       },

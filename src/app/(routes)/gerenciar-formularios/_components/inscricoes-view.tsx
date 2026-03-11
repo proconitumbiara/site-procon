@@ -4,8 +4,8 @@ import { calculateAge } from "@/lib/formatters/date";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
+import { SCHOOLS } from "@/actions/create-form-registration/schema";
 import { AGE_RANGES, type AgeRangeValue } from "@/constants/gincana";
-import { SCHOOLS } from "@/actions/create-gincana-registration/schema";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -15,16 +15,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { GincanaRegistrationWithGuardian } from "../types";
+import type { RegistrationWithGuardian } from "../types";
 import InscricoesCards from "./inscricoes-cards";
 import InscricoesTable from "./inscricoes-table";
 
-
-interface GincanaInscricoesViewProps {
-  registrations: GincanaRegistrationWithGuardian[];
+interface InscricoesViewProps {
+  registrations: RegistrationWithGuardian[];
 }
 
-function getAgeForRegistration(registration: GincanaRegistrationWithGuardian) {
+function getAgeForRegistration(registration: RegistrationWithGuardian) {
   return calculateAge(new Date(registration.participantBirthDate));
 }
 
@@ -36,9 +35,9 @@ function matchesAgeRange(age: number, range: AgeRangeValue): boolean {
   return true;
 }
 
-export default function GincanaInscricoesView({
+export default function InscricoesView({
   registrations,
-}: GincanaInscricoesViewProps) {
+}: InscricoesViewProps) {
   const router = useRouter();
   const [schoolFilter, setSchoolFilter] = useState<string>("all");
   const [ageRangeFilter, setAgeRangeFilter] = useState<AgeRangeValue>("all");
@@ -92,7 +91,10 @@ export default function GincanaInscricoesView({
             value={ageRangeFilter}
             onValueChange={(v) => setAgeRangeFilter(v as AgeRangeValue)}
           >
-            <SelectTrigger className="w-[180px]" aria-label="Filtrar por faixa de idade">
+            <SelectTrigger
+              className="w-[180px]"
+              aria-label="Filtrar por faixa de idade"
+            >
               <SelectValue placeholder="Faixa de idade" />
             </SelectTrigger>
             <SelectContent className="z-50">
@@ -111,7 +113,10 @@ export default function GincanaInscricoesView({
             value={categoryFilter}
             onValueChange={setCategoryFilter}
           >
-            <SelectTrigger className="w-[160px]" aria-label="Filtrar por categoria">
+            <SelectTrigger
+              className="w-[160px]"
+              aria-label="Filtrar por categoria"
+            >
               <SelectValue placeholder="Categoria" />
             </SelectTrigger>
             <SelectContent className="z-50">
@@ -145,8 +150,8 @@ export default function GincanaInscricoesView({
             {filteredRegistrations.length === 1 ? "ão" : "ões"} encontrada
             {filteredRegistrations.length === 1 ? "" : "s"}
             {schoolFilter !== "all" ||
-              ageRangeFilter !== "all" ||
-              categoryFilter !== "all"
+            ageRangeFilter !== "all" ||
+            categoryFilter !== "all"
               ? " (com filtros)"
               : ""}
           </p>

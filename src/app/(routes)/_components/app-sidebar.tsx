@@ -2,6 +2,7 @@
 
 import {
   BriefcaseBusinessIcon,
+  ClipboardPlus,
   HammerIcon,
   LogOutIcon,
   Newspaper,
@@ -60,9 +61,9 @@ const itemsWebSite = [
 
 const itemsFormularios = [
   {
-    title: "Gincana Procon nas Escolas",
-    url: "/gerenciar-gincana-procon-nas-escolas",
-    icon: School,
+    title: "Formulários",
+    url: "/gerenciar-formularios",
+    icon: ClipboardPlus,
   },
 ];
 

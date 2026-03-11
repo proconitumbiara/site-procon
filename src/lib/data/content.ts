@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import {
+  formsTable,
   newsTable,
   priceSearchesTable,
   projectsTable,
@@ -54,6 +55,13 @@ export async function getAllProjects() {
   });
 }
 
+export async function getProjectsWithForms() {
+  return db.query.projectsTable.findMany({
+    with: { forms: true },
+    orderBy: (project, { desc }) => [desc(project.createdAT)],
+  });
+}
+
 export async function getProjectBySlug(slug: string) {
   const project = await db.query.projectsTable.findFirst({
     where: (project, { eq }) => eq(project.slug, slug),
@@ -76,6 +84,41 @@ export async function getProjectById(id: string) {
   }
 
   return project;
+}
+
+export type FormRecord = typeof formsTable.$inferSelect;
+
+export async function getFormById(id: string) {
+  const form = await db.query.formsTable.findFirst({
+    where: (form, { eq }) => eq(form.id, id),
+    with: { project: true },
+  });
+
+  if (!form) {
+    return null;
+  }
+
+  return form;
+}
+
+export async function getFormBySlug(slug: string) {
+  const form = await db.query.formsTable.findFirst({
+    where: (form, { eq }) => eq(form.slug, slug),
+    with: { project: true },
+  });
+
+  if (!form) {
+    return null;
+  }
+
+  return form;
+}
+
+export async function getFormsByProjectId(projectId: string) {
+  return db.query.formsTable.findMany({
+    where: (form, { eq }) => eq(form.projectId, projectId),
+    orderBy: (form, { asc }) => [asc(form.name)],
+  });
 }
 
 export async function getActiveServices() {

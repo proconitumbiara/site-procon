@@ -189,7 +189,11 @@ export default function GuardianAuthorizationForm({
                 <FormItem>
                   <FormLabel>Telefone</FormLabel>
                   <FormControl>
-                    <Input placeholder="(00) 00000-0000" type="tel" {...field} />
+                    <Input
+                      placeholder="(00) 00000-0000"
+                      type="tel"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

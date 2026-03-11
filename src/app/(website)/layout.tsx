@@ -19,45 +19,29 @@ export const metadata: Metadata = {
     "Site institucional do Procon - Fundação de Proteção e Defesa do Consumidor",
 };
 
-export default function RootLayout({
+export default function WebsiteLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className="light" suppressHydrationWarning>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                const html = document.documentElement;
-                html.classList.remove('dark');
-                html.classList.add('light');
-              })();
-            `,
-          }}
-        />
-      </head>
-      <body className={`${montserrat.variable} antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          forcedTheme="light"
-          enableSystem={false}
-          disableTransitionOnChange
-        >
-          <ForceLightTheme />
-          <AccessibilityProvider>
-            {/* Skip Link para Acessibilidade */}
-            <a href="#main-content" className="skip-link">
-              Pular para o conteúdo principal
-            </a>
-            {children}
-            <AccessibilityPanel />
-            {/* <Popup /> */}
-          </AccessibilityProvider>
-        </ThemeProvider>
-      </body>
-    </html>
+    <div className={`${montserrat.variable} antialiased`}>
+      <ThemeProvider
+        attribute="class"
+        forcedTheme="light"
+        enableSystem={false}
+        disableTransitionOnChange
+      >
+        <ForceLightTheme />
+        <AccessibilityProvider>
+          {/* Skip Link para Acessibilidade */}
+          <a href="#main-content" className="skip-link">
+            Pular para o conteúdo principal
+          </a>
+          {children}
+          <AccessibilityPanel />
+        </AccessibilityProvider>
+      </ThemeProvider>
+    </div>
   );
 }

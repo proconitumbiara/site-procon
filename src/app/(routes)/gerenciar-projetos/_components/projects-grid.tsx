@@ -1,19 +1,24 @@
 "use client";
 
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, FileText } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo } from "react";
 
+import AddFormButton from "@/app/(routes)/gerenciar-projetos/_components/add-form-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ProjectWithDocuments } from "@/types/content-management";
+import type { FormRecord } from "@/lib/data/content";
+import type { ProjectRecord } from "@/lib/data/content";
+
+type ProjectWithForms = ProjectRecord & { forms: FormRecord[] };
 
 const STATUS_LABELS: Record<string, string> = {
   active: "Ativo",
@@ -21,7 +26,7 @@ const STATUS_LABELS: Record<string, string> = {
   draft: "Rascunho",
 };
 
-const ProjectsGrid = ({ projects }: { projects: ProjectWithDocuments[] }) => {
+const ProjectsGrid = ({ projects }: { projects: ProjectWithForms[] }) => {
   const sortedProjects = useMemo(
     () =>
       [...projects].sort(
@@ -42,10 +47,10 @@ const ProjectsGrid = ({ projects }: { projects: ProjectWithDocuments[] }) => {
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-2">
+    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
       {sortedProjects.map((project) => (
         <Card key={project.id} className="h-full border">
-          <CardHeader className="flex flex-row items-start gap-3 border-b pb-4">
+          <CardHeader className="flex flex-row items-start gap-3 pb-4">
             {project.coverImageUrl && (
               <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md border">
                 <Image
@@ -74,7 +79,33 @@ const ProjectsGrid = ({ projects }: { projects: ProjectWithDocuments[] }) => {
               </Link>
             </Button>
           </CardHeader>
-          <CardContent className="pt-4" />
+          <CardFooter className="flex flex-col items-stretch gap-3 border-t pt-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-muted-foreground text-sm font-medium">
+                Formulários
+              </span>
+              <AddFormButton projectId={project.id} />
+            </div>
+            {project.forms?.length ? (
+              <ul className="flex flex-col gap-1">
+                {project.forms.map((form) => (
+                  <li key={form.id}>
+                    <Link
+                      href={`/gerenciar-formularios/${form.id}`}
+                      className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-foreground hover:bg-muted"
+                    >
+                      <FileText className="h-4 w-4 shrink-0" />
+                      {form.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-muted-foreground text-sm">
+                Nenhum formulário vinculado.
+              </p>
+            )}
+          </CardFooter>
         </Card>
       ))}
     </div>

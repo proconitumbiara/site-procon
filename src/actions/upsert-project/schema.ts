@@ -28,8 +28,7 @@ export const upsertProjectSchema = z.object({
   status: z
     .string()
     .trim()
-    .min(1, { message: "O status é obrigatório." })
-    .default("active"),
+    .min(1, { message: "O status é obrigatório." }),
 });
 
 export type UpsertProjectInput = z.infer<typeof upsertProjectSchema>;

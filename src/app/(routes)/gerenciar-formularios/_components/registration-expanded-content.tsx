@@ -4,12 +4,11 @@ import { FileText } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/formatters";
-import type { GincanaRegistrationWithGuardian } from "../types";
+import type { RegistrationWithGuardian } from "../types";
 import GuardianAuthorizationForm from "./guardian-authorization-form";
 
-
 interface RegistrationExpandedContentProps {
-  registration: GincanaRegistrationWithGuardian;
+  registration: RegistrationWithGuardian;
   onGuardianAdded?: () => void;
 }
 
@@ -26,7 +25,8 @@ export function RegistrationExpandedContent({
   registration,
   onGuardianAdded,
 }: RegistrationExpandedContentProps) {
-  const hasGuardianDocs = registration.guardianAuthorizationDocuments?.length > 0;
+  const hasGuardianDocs =
+    registration.guardianAuthorizationDocuments?.length > 0;
 
   return (
     <div className="w-full space-y-6">
@@ -39,7 +39,9 @@ export function RegistrationExpandedContent({
         </div>
         <div className="text-muted-foreground flex justify-between gap-2">
           <span>Telefone</span>
-          <span className="text-foreground">{registration.participantPhone}</span>
+          <span className="text-foreground">
+            {registration.participantPhone}
+          </span>
         </div>
         <div className="text-muted-foreground flex justify-between gap-2">
           <span>Data de nascimento</span>
@@ -92,7 +94,9 @@ export function RegistrationExpandedContent({
       </div>
 
       <div className="border-t pt-4">
-        <h4 className="mb-3 text-sm font-semibold">Responsável e autorização</h4>
+        <h4 className="mb-3 text-sm font-semibold">
+          Responsável e autorização
+        </h4>
         {hasGuardianDocs ? (
           <div className="space-y-4">
             {registration.guardianAuthorizationDocuments.map((doc) => (

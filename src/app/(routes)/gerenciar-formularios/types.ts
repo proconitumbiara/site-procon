@@ -14,6 +14,6 @@ export type GuardianAuthorizationDocumentWithGuardian =
     guardian: GuardianRow;
   };
 
-export type GincanaRegistrationWithGuardian = RegistrationRow & {
+export type RegistrationWithGuardian = RegistrationRow & {
   guardianAuthorizationDocuments: GuardianAuthorizationDocumentWithGuardian[];
 };

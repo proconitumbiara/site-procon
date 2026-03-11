@@ -199,9 +199,6 @@ export const formsTable = pgTable("forms", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
   slug: text("slug").notNull().unique(),
-  summary: text("summary"), //Texto curto para o card do formulário
-  description: text("description"), //Descrição do formulário
-  coverImageUrl: text("cover_image_url"), //URL da imagem de capa do formulário
   isActive: boolean("is_active").notNull().default(true), //Se o formulário está ativo
   projectId: uuid("project_id")
     .notNull()
@@ -280,6 +277,11 @@ export const guardianAuthorizationDocumentTable = pgTable(
 );
 
 //Relationships
+
+//Projects relationships
+export const projectsRelations = relations(projectsTable, ({ many }) => ({
+  forms: many(formsTable),
+}));
 
 //Price searches relationships
 export const priceSearchesRelations = relations(

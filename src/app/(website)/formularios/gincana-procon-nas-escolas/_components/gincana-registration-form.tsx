@@ -7,13 +7,13 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { createGincanaRegistration } from "@/actions/create-gincana-registration";
+import { createFormRegistration } from "@/actions/create-form-registration";
 import {
   CLOTHING_SIZES,
-  createGincanaRegistrationSchema,
+  createFormRegistrationSchema,
   SCHOOLS,
   STUDENT_PERIODS,
-} from "@/actions/create-gincana-registration/schema";
+} from "@/actions/create-form-registration/schema";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -38,9 +38,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 type LegalDialogType = "terms" | "privacy" | "image" | null;
 
-type FormValues = z.infer<typeof createGincanaRegistrationSchema>;
+type FormValues = z.infer<typeof createFormRegistrationSchema>;
 
-const defaultValues: Partial<FormValues> = {
+const getDefaultValues = (formId: string): Partial<FormValues> => ({
+  formId,
   participantFullName: "",
   participantPhone: "",
   participantBirthDate: "",
@@ -51,13 +52,15 @@ const defaultValues: Partial<FormValues> = {
   clothingSize: undefined,
   acceptTermsAndPrivacy: undefined,
   acceptImageUse: undefined,
-};
+});
 
-export function GincanaRegistrationForm() {
+export function GincanaRegistrationForm({ formId }: { formId: string }) {
   const [openDialog, setOpenDialog] = useState<LegalDialogType>(null);
 
+  const defaultValues = getDefaultValues(formId);
+
   const form = useForm<FormValues>({
-    resolver: zodResolver(createGincanaRegistrationSchema),
+    resolver: zodResolver(createFormRegistrationSchema),
     defaultValues,
     mode: "onChange",
   });
@@ -66,7 +69,7 @@ export function GincanaRegistrationForm() {
   const acceptTermsAndPrivacy = form.watch("acceptTermsAndPrivacy");
   const acceptImageUse = form.watch("acceptImageUse");
 
-  const { execute, isExecuting } = useAction(createGincanaRegistration, {
+  const { execute, isExecuting } = useAction(createFormRegistration, {
     onSuccess: (result) => {
       if (result?.data?.error) {
         toast.error(result.data.error.message);
@@ -83,6 +86,7 @@ export function GincanaRegistrationForm() {
   function onSubmit(values: FormValues) {
     execute({
       ...values,
+      formId,
       pageUrl: typeof window !== "undefined" ? window.location.href : undefined,
       locale: typeof navigator !== "undefined" ? navigator.language : undefined,
     });

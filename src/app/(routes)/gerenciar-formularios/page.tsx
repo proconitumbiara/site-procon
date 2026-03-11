@@ -2,7 +2,6 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import {
-  PageActions,
   PageContainer,
   PageContent,
   PageDescription,
@@ -10,13 +9,12 @@ import {
   PageHeaderContent,
   PageTitle,
 } from "@/components/ui/page-container";
-import { getProjectsWithForms } from "@/lib/data/content";
+import { db } from "@/db";
 import { auth } from "@/lib/auth";
 
-import AddProjectButton from "./_components/add-project-button";
-import ProjectsGrid from "./_components/projects-grid";
+import FormsGrid from "./_components/forms-grid";
 
-const ProjetosPage = async () => {
+export default async function GerenciarFormulariosPage() {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -25,26 +23,27 @@ const ProjetosPage = async () => {
     redirect("/auth/sign-in");
   }
 
-  const projects = await getProjectsWithForms();
+  const forms = await db.query.formsTable.findMany({
+    with: {
+      project: { columns: { id: true, title: true } },
+      registrations: { columns: { id: true } },
+    },
+    orderBy: (form, { desc }) => [desc(form.createdAT)],
+  });
 
   return (
     <PageContainer>
       <PageHeader>
         <PageHeaderContent>
-          <PageTitle>Projetos</PageTitle>
+          <PageTitle>Formulários</PageTitle>
           <PageDescription>
-            Acompanhe e organize os projetos institucionais.
+            Gerencie os formulários de inscrição vinculados aos projetos.
           </PageDescription>
         </PageHeaderContent>
-        <PageActions>
-          <AddProjectButton />
-        </PageActions>
       </PageHeader>
       <PageContent>
-        <ProjectsGrid projects={projects} />
+        <FormsGrid forms={forms} />
       </PageContent>
     </PageContainer>
   );
-};
-
-export default ProjetosPage;
+}

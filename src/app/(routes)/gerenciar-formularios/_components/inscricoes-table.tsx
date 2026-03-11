@@ -3,6 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { useState } from "react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,9 +13,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { DataTable } from "@/components/ui/data-table";
-import { Badge } from "@/components/ui/badge";
 import { calculateAge } from "@/lib/formatters/date";
-import type { GincanaRegistrationWithGuardian } from "../types";
+import type { RegistrationWithGuardian } from "../types";
 
 import { RegistrationExpandedContent } from "./registration-expanded-content";
 
@@ -28,7 +28,7 @@ function getStatusLabel(status: string) {
 }
 
 interface InscricoesTableProps {
-  registrations: GincanaRegistrationWithGuardian[];
+  registrations: RegistrationWithGuardian[];
   onGuardianAdded?: () => void;
 }
 
@@ -38,7 +38,7 @@ export default function InscricoesTable({
 }: InscricoesTableProps) {
   const [viewingId, setViewingId] = useState<string | null>(null);
 
-  const columns: ColumnDef<GincanaRegistrationWithGuardian>[] = [
+  const columns: ColumnDef<RegistrationWithGuardian>[] = [
     {
       id: "participantFullName",
       accessorKey: "participantFullName",
@@ -58,7 +58,9 @@ export default function InscricoesTable({
       accessorKey: "participantCategory",
       header: "Categoria",
       cell: ({ row }) =>
-        row.original.participantCategory === "student" ? "Aluno" : "Profissional",
+        row.original.participantCategory === "student"
+          ? "Aluno"
+          : "Profissional",
     },
     {
       id: "age",
