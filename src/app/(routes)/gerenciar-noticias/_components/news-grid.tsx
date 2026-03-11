@@ -1,24 +1,18 @@
 "use client";
 
-import { Pencil } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
 import { newsTable } from "@/db/schema";
-import { formatDate } from "@/lib/formatters";
-
-import UpsertNewsForm from "./upsert-news-form";
 
 const DEFAULT_NEWS_IMAGE = "/LogoHorizontal.png";
 
@@ -26,17 +20,7 @@ interface NewsGridProps {
   news: (typeof newsTable.$inferSelect)[];
 }
 
-const truncateTitle = (title: string, maxWords: number = 6) => {
-  const words = title.trim().split(/\s+/);
-  if (words.length <= maxWords) {
-    return title;
-  }
-  return words.slice(0, maxWords).join(" ") + "...";
-};
-
 const NewsGrid = ({ news }: NewsGridProps) => {
-  const [editingId, setEditingId] = useState<string | null>(null);
-
   if (!news.length) {
     return (
       <div className="rounded-lg border border-dashed p-8 text-center">
@@ -51,68 +35,34 @@ const NewsGrid = ({ news }: NewsGridProps) => {
     <div className="grid gap-6 md:grid-cols-2">
       {news.map((item) => (
         <Card key={item.id} className="h-full border">
-          <CardHeader className="space-y-4 border-b pb-4">
-            <div className="relative h-48 w-full overflow-hidden rounded-md border">
+          <CardHeader className="flex flex-row items-start gap-3 border-b pb-4">
+            <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md border">
               <Image
                 src={item.coverImageUrl || DEFAULT_NEWS_IMAGE}
                 alt={`Capa da notícia ${item.title}`}
                 fill
                 className="object-cover"
-                sizes="(min-width: 768px) 50vw, 100vw"
+                sizes="64px"
               />
             </div>
-            <div>
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex w-full items-center gap-2">
-                  <CardTitle className="text-lg">
-                    {truncateTitle(item.title)}
-                  </CardTitle>
-                  <Badge variant={item.isPublished ? "default" : "secondary"}>
-                    {item.isPublished ? "Publicado" : "Rascunho"}
-                  </Badge>
-                  {item.emphasis && (
-                    <Badge variant="secondary">Em destaque</Badge>
-                  )}
-                </div>
-                <Dialog
-                  open={editingId === item.id}
-                  onOpenChange={(open) => setEditingId(open ? item.id : null)}
-                >
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </DialogTrigger>
-                  <UpsertNewsForm
-                    news={item}
-                    onSuccess={() => setEditingId(null)}
-                  />
-                </Dialog>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <CardTitle className="text-lg">{item.title}</CardTitle>
+                <Badge variant={item.isPublished ? "default" : "secondary"}>
+                  {item.isPublished ? "Publicado" : "Rascunho"}
+                </Badge>
+                {item.emphasis && (
+                  <Badge variant="secondary">Em destaque</Badge>
+                )}
               </div>
-              <CardDescription>{item.slug}</CardDescription>
             </div>
+            <Button variant="ghost" size="icon" asChild>
+              <Link href={`/gerenciar-noticias/${item.id}`}>
+                <ChevronRight className="h-4 w-4" aria-label="Abrir notícia" />
+              </Link>
+            </Button>
           </CardHeader>
-          <CardContent className="space-y-4 pt-4">
-            <div className="space-y-1">
-              <p className="text-muted-foreground text-sm">
-                {item.excerpt || "Sem resumo disponível."}
-              </p>
-              <p className="text-sm">
-                {item.content || "Sem conteúdo cadastrado."}
-              </p>
-            </div>
-            <Separator />
-            <div className="grid gap-1 text-sm">
-              <div className="text-muted-foreground flex justify-between">
-                <span>Publicado em</span>
-                <span>{formatDate(item.publishedAt)}</span>
-              </div>
-              <div className="text-muted-foreground flex justify-between">
-                <span>Atualizado em</span>
-                <span>{formatDate(item.updatedAt)}</span>
-              </div>
-            </div>
-          </CardContent>
+          <CardContent className="pt-4" />
         </Card>
       ))}
     </div>

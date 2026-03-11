@@ -32,6 +32,7 @@ export const upsertService = actionClient
       };
     }
 
+    let serviceId: string | undefined;
     await db.transaction(async (tx) => {
       const [result] = await tx
         .insert(servicesTable)
@@ -64,14 +65,17 @@ export const upsertService = actionClient
         })
         .returning({ id: servicesTable.id });
 
-      const serviceId = result?.id ?? parsedInput.id;
+      serviceId = result?.id ?? parsedInput.id;
 
       if (!serviceId) {
         throw new Error("Falha ao salvar serviço.");
       }
     });
 
-    revalidatePath("/servicos");
+    revalidatePath("/gerenciar-servicos");
+    if (serviceId) {
+      revalidatePath(`/gerenciar-servicos/${serviceId}`);
+    }
 
     return { success: true };
   });

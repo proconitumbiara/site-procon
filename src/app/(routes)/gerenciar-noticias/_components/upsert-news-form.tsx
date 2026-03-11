@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useAction } from "next-safe-action/hooks";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -29,16 +30,20 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { newsTable } from "@/db/schema";
 
+type NewsRecord = typeof newsTable.$inferSelect;
+
 interface UpsertNewsFormProps {
-  news?: typeof newsTable.$inferSelect;
+  news?: NewsRecord;
   onSuccess?: () => void;
+  /** Quando true, renderiza apenas o formulário (para página [id]); quando false, dentro de DialogContent (criação). */
+  embedded?: boolean;
 }
 
 const formSchema = upsertNewsSchema.omit({ id: true });
 
 type FormValues = z.infer<typeof formSchema>;
 
-const getDefaultValues = (news?: typeof newsTable.$inferSelect) => ({
+const getDefaultValues = (news?: NewsRecord): FormValues => ({
   title: news?.title ?? "",
   slug: news?.slug ?? "",
   excerpt: news?.excerpt ?? "",
@@ -51,7 +56,12 @@ const getDefaultValues = (news?: typeof newsTable.$inferSelect) => ({
   emphasis: news?.emphasis ?? false,
 });
 
-const UpsertNewsForm = ({ news, onSuccess }: UpsertNewsFormProps) => {
+const UpsertNewsForm = ({
+  news,
+  onSuccess,
+  embedded = false,
+}: UpsertNewsFormProps) => {
+  const router = useRouter();
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: getDefaultValues(news),
@@ -70,8 +80,12 @@ const UpsertNewsForm = ({ news, onSuccess }: UpsertNewsFormProps) => {
           ? "Notícia atualizada com sucesso!"
           : "Notícia criada com sucesso!",
       );
-      onSuccess?.();
-      form.reset(getDefaultValues(news));
+      if (embedded) {
+        router.refresh();
+      } else {
+        onSuccess?.();
+        form.reset(getDefaultValues(news));
+      }
     },
     onError: (error) => {
       const message =
@@ -119,13 +133,7 @@ const UpsertNewsForm = ({ news, onSuccess }: UpsertNewsFormProps) => {
   };
 
   return (
-    <DialogContent className="max-w-3xl">
-      <DialogTitle>{news ? "Editar notícia" : "Nova notícia"}</DialogTitle>
-      <DialogDescription>
-        {news
-          ? "Atualize os dados desta notícia."
-          : "Cadastre uma nova notícia para o portal."}
-      </DialogDescription>
+    <NewsFormWrapper embedded={embedded} news={news}>
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
@@ -311,24 +319,64 @@ const UpsertNewsForm = ({ news, onSuccess }: UpsertNewsFormProps) => {
             />
           </div>
 
-          <DialogFooter>
-            <Button type="submit" disabled={status === "executing"}>
-              {status === "executing" ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Salvando...
-                </>
-              ) : news ? (
-                "Atualizar notícia"
-              ) : (
-                "Criar notícia"
-              )}
-            </Button>
-          </DialogFooter>
+          {embedded ? (
+            <div className="flex justify-end pt-4">
+              <Button type="submit" disabled={status === "executing"}>
+                {status === "executing" ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Salvando...
+                  </>
+                ) : (
+                  "Atualizar notícia"
+                )}
+              </Button>
+            </div>
+          ) : (
+            <DialogFooter>
+              <Button type="submit" disabled={status === "executing"}>
+                {status === "executing" ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Salvando...
+                  </>
+                ) : news ? (
+                  "Atualizar notícia"
+                ) : (
+                  "Criar notícia"
+                )}
+              </Button>
+            </DialogFooter>
+          )}
         </form>
       </Form>
-    </DialogContent>
+    </NewsFormWrapper>
   );
 };
+
+function NewsFormWrapper({
+  embedded,
+  children,
+  news,
+}: {
+  embedded: boolean;
+  children: React.ReactNode;
+  news?: NewsRecord;
+}) {
+  if (embedded) {
+    return <div className="space-y-4">{children}</div>;
+  }
+  return (
+    <DialogContent className="max-w-3xl">
+      <DialogTitle>{news ? "Editar notícia" : "Nova notícia"}</DialogTitle>
+      <DialogDescription>
+        {news
+          ? "Atualize os dados desta notícia."
+          : "Cadastre uma nova notícia para o portal."}
+      </DialogDescription>
+      {children}
+    </DialogContent>
+  );
+}
 
 export default UpsertNewsForm;

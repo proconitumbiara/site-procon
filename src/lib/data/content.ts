@@ -36,6 +36,18 @@ export async function getNewsBySlug(slug: string) {
   return news;
 }
 
+export async function getNewsById(id: string) {
+  const news = await db.query.newsTable.findFirst({
+    where: (news, { eq }) => eq(news.id, id),
+  });
+
+  if (!news) {
+    return null;
+  }
+
+  return news;
+}
+
 export async function getAllProjects() {
   return db.query.projectsTable.findMany({
     orderBy: (project, { desc }) => [desc(project.createdAT)],
@@ -45,6 +57,18 @@ export async function getAllProjects() {
 export async function getProjectBySlug(slug: string) {
   const project = await db.query.projectsTable.findFirst({
     where: (project, { eq }) => eq(project.slug, slug),
+  });
+
+  if (!project) {
+    return null;
+  }
+
+  return project;
+}
+
+export async function getProjectById(id: string) {
+  const project = await db.query.projectsTable.findFirst({
+    where: (project, { eq }) => eq(project.id, id),
   });
 
   if (!project) {
@@ -68,6 +92,18 @@ export async function getServiceBySlug(slug: string) {
         helpers.eq(service.slug, slug),
         helpers.eq(service.isActive, true),
       ),
+  });
+
+  if (!service) {
+    return null;
+  }
+
+  return service;
+}
+
+export async function getServiceById(id: string) {
+  const service = await db.query.servicesTable.findFirst({
+    where: (service, { eq }) => eq(service.id, id),
   });
 
   if (!service) {

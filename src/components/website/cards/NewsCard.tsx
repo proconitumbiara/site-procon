@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 interface NewsCardProps {
@@ -8,10 +9,11 @@ interface NewsCardProps {
   title: string;
   image: string;
   description: string;
-  slug: string; // ou href
+  slug: string;
   imageAlt?: string;
   publishedAt?: string | Date;
   status?: "published" | "draft";
+  emphasis?: boolean;
 }
 
 export default function NewsCard({
@@ -23,6 +25,7 @@ export default function NewsCard({
   publishedAt,
   status,
   id,
+  emphasis,
 }: NewsCardProps) {
   const altText = imageAlt || title;
   const href = slug ? `/noticias/${slug}` : `/noticias/${id}`;
@@ -33,26 +36,38 @@ export default function NewsCard({
 
   return (
     <div className="bg-card border-border group hover:border-primary flex h-full flex-col rounded-lg border p-6 transition-all duration-300 hover:shadow-lg">
-      <div className="relative mb-4 h-48 w-full overflow-hidden rounded-lg">
-        <Image
-          src={image}
-          alt={altText}
-          fill
-          className="object-cover transition-transform duration-300 group-hover:scale-110"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-        />
+      <div className="flex flex-row gap-3">
+        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg">
+          <Image
+            src={image}
+            alt={altText}
+            fill
+            className="object-cover transition-transform duration-300 group-hover:scale-110"
+            sizes="64px"
+          />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="text-foreground group-hover:text-primary text-xl font-semibold transition-colors duration-300">
+              {title}
+            </h3>
+            {emphasis && (
+              <Badge variant="secondary">Em destaque</Badge>
+            )}
+            <Badge variant={isPublished ? "default" : "secondary"}>
+              {isPublished ? "Publicado" : "Rascunho"}
+            </Badge>
+          </div>
+          {isPublished && publishedDate && (
+            <p className="text-muted-foreground mt-1 text-sm">
+              Publicado em: {publishedDate}
+            </p>
+          )}
+        </div>
       </div>
-      <h3 className="text-foreground group-hover:text-primary mb-2 text-xl font-semibold transition-colors duration-300">
-        {title}
-      </h3>
-      <p className="text-muted-foreground group-hover:text-foreground/80 mb-4 grow text-sm transition-colors duration-300">
+      <p className="text-muted-foreground group-hover:text-foreground/80 mb-4 mt-3 grow text-sm transition-colors duration-300 line-clamp-2">
         {description}
       </p>
-      {isPublished && publishedDate && (
-        <p className="text-muted-foreground mb-4 text-sm">
-          Publicado em: {publishedDate}
-        </p>
-      )}
       <Button
         asChild
         variant="outline"

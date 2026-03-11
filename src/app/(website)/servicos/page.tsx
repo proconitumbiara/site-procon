@@ -64,6 +64,7 @@ export default async function ServicosPage() {
                   }
                   slug={service.slug}
                   status={service.isActive ? "active" : "inactive"}
+                  emphasis={service.emphasis}
                 />
               ))}
             </div>

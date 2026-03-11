@@ -32,6 +32,7 @@ export const upsertProject = actionClient
       };
     }
 
+    let projectId: string | undefined;
     await db.transaction(async (tx) => {
       const [result] = await tx
         .insert(projectsTable)
@@ -43,6 +44,7 @@ export const upsertProject = actionClient
           description: normalizeNullableString(parsedInput.description),
           coverImageUrl: normalizeNullableString(parsedInput.coverImageUrl),
           emphasis: parsedInput.emphasis ?? false,
+          status: (parsedInput.status ?? "active").trim(),
         })
         .onConflictDoUpdate({
           target: [projectsTable.id],
@@ -53,19 +55,23 @@ export const upsertProject = actionClient
             description: normalizeNullableString(parsedInput.description),
             coverImageUrl: normalizeNullableString(parsedInput.coverImageUrl),
             emphasis: parsedInput.emphasis ?? false,
+            status: (parsedInput.status ?? "active").trim(),
             updatedAt: new Date(),
           },
         })
         .returning({ id: projectsTable.id });
 
-      const projectId = result?.id ?? parsedInput.id;
+      projectId = result?.id ?? parsedInput.id;
 
       if (!projectId) {
         throw new Error("Falha ao salvar projeto.");
       }
     });
 
-    revalidatePath("/projetos");
+    revalidatePath("/gerenciar-projetos");
+    if (projectId) {
+      revalidatePath(`/gerenciar-projetos/${projectId}`);
+    }
 
     return { success: true };
   });

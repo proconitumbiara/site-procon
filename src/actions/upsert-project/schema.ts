@@ -25,6 +25,11 @@ export const upsertProjectSchema = z.object({
   description: z.string().trim().optional(),
   coverImageUrl: z.string().trim().optional(),
   emphasis: z.boolean().optional(),
+  status: z
+    .string()
+    .trim()
+    .min(1, { message: "O status é obrigatório." })
+    .default("active"),
 });
 
 export type UpsertProjectInput = z.infer<typeof upsertProjectSchema>;

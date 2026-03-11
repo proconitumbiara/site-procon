@@ -86,6 +86,7 @@ export const projectsTable = pgTable("projects", {
   slug: text("slug").notNull().unique(),
   summary: text("summary"), //Texto curto para o card do projeto
   description: text("description"), //Texto longo para o projeto
+  status: text("status").notNull().default("active"), //Status do projeto
   coverImageUrl: text("cover_image_url"), //URL da imagem de capa do projeto
   emphasis: boolean("emphasis").notNull().default(false), //Se o projeto é em destaque
   createdAT: timestamp("created_at").defaultNow().notNull(),
@@ -193,12 +194,30 @@ export const registrationCodesTable = pgTable("registration_codes", {
   usedAt: timestamp("used_at"),
 });
 
-//Tabela de inscrições de participantes
-export const registrationTable = pgTable("registration", {
+//Tabela para armazenar formulários
+export const formsTable = pgTable("forms", {
   id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  summary: text("summary"), //Texto curto para o card do formulário
+  description: text("description"), //Descrição do formulário
+  coverImageUrl: text("cover_image_url"), //URL da imagem de capa do formulário
+  isActive: boolean("is_active").notNull().default(true), //Se o formulário está ativo
   projectId: uuid("project_id")
     .notNull()
     .references(() => projectsTable.id, { onDelete: "cascade" }),
+  createdAT: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+//Tabela de inscrições de participantes
+export const registrationTable = pgTable("registration", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  formId: uuid("form_id")
+    .notNull()
+    .references(() => formsTable.id, { onDelete: "cascade" }),
   participantFullName: text("participant_full_name").notNull(),
   participantPhone: text("participant_phone").notNull(),
   participantBirthDate: date("participant_birth_date").notNull(),
@@ -312,9 +331,9 @@ export const priceSearchItemsRelations = relations(
 export const registrationRelations = relations(
   registrationTable,
   ({ one, many }) => ({
-    project: one(projectsTable, {
-      fields: [registrationTable.projectId],
-      references: [projectsTable.id],
+    form: one(formsTable, {
+      fields: [registrationTable.formId],
+      references: [formsTable.id],
     }),
     assents: many(registrationAssentTable),
     guardianAuthorizationDocuments: many(guardianAuthorizationDocumentTable),
@@ -349,5 +368,22 @@ export const guardianAuthorizationDocumentRelations = relations(
       fields: [guardianAuthorizationDocumentTable.guardianId],
       references: [guardianTable.id],
     }),
+  }),
+);
+
+//Forms relationships
+export const formsRelations = relations(formsTable, ({ one, many }) => ({
+  project: one(projectsTable, {
+    fields: [formsTable.projectId],
+    references: [projectsTable.id],
+  }),
+  registrations: many(registrationTable),
+}));
+
+//Registration codes relationships
+export const registrationCodesRelations = relations(
+  registrationCodesTable,
+  ({ many }) => ({
+    registrations: many(registrationTable),
   }),
 );

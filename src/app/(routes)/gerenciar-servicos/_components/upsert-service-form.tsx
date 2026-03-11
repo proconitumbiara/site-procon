@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useAction } from "next-safe-action/hooks";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -31,13 +32,15 @@ import { ServiceWithDocuments } from "@/types/content-management";
 interface UpsertServiceFormProps {
   service?: ServiceWithDocuments;
   onSuccess?: () => void;
+  /** Quando true, renderiza apenas o formulário (para página [id]); quando false, dentro de DialogContent (criação). */
+  embedded?: boolean;
 }
 
 const formSchema = upsertServiceSchema.omit({ id: true });
 
 type FormValues = z.infer<typeof formSchema>;
 
-const getDefaultValues = (service?: ServiceWithDocuments) => ({
+const getDefaultValues = (service?: ServiceWithDocuments): FormValues => ({
   title: service?.title ?? "",
   slug: service?.slug ?? "",
   description: service?.description ?? "",
@@ -49,7 +52,12 @@ const getDefaultValues = (service?: ServiceWithDocuments) => ({
   emphasis: service?.emphasis ?? false,
 });
 
-const UpsertServiceForm = ({ service, onSuccess }: UpsertServiceFormProps) => {
+const UpsertServiceForm = ({
+  service,
+  onSuccess,
+  embedded = false,
+}: UpsertServiceFormProps) => {
+  const router = useRouter();
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: getDefaultValues(service),
@@ -64,8 +72,12 @@ const UpsertServiceForm = ({ service, onSuccess }: UpsertServiceFormProps) => {
       toast.success(
         service ? "Serviço atualizado com sucesso!" : "Serviço criado com sucesso!",
       );
-      onSuccess?.();
-      form.reset(getDefaultValues(service));
+      if (embedded) {
+        router.refresh();
+      } else {
+        onSuccess?.();
+        form.reset(getDefaultValues(service));
+      }
     },
     onError: (error) => {
       const message =
@@ -84,13 +96,7 @@ const UpsertServiceForm = ({ service, onSuccess }: UpsertServiceFormProps) => {
   };
 
   return (
-    <DialogContent className="max-w-3xl">
-      <DialogTitle>{service ? "Editar serviço" : "Novo serviço"}</DialogTitle>
-      <DialogDescription>
-        {service
-          ? "Atualize as informações do serviço oferecido."
-          : "Cadastre um novo serviço para os cidadãos."}
-      </DialogDescription>
+    <ServiceFormWrapper embedded={embedded} service={service}>
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
@@ -248,25 +254,65 @@ const UpsertServiceForm = ({ service, onSuccess }: UpsertServiceFormProps) => {
             />
           </div>
 
-          <DialogFooter>
-            <Button type="submit" disabled={status === "executing"}>
-              {status === "executing" ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Salvando...
-                </>
-              ) : service ? (
-                "Atualizar serviço"
-              ) : (
-                "Criar serviço"
-              )}
-            </Button>
-          </DialogFooter>
+          {embedded ? (
+            <div className="flex justify-end pt-4">
+              <Button type="submit" disabled={status === "executing"}>
+                {status === "executing" ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Salvando...
+                  </>
+                ) : (
+                  "Atualizar serviço"
+                )}
+              </Button>
+            </div>
+          ) : (
+            <DialogFooter>
+              <Button type="submit" disabled={status === "executing"}>
+                {status === "executing" ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Salvando...
+                  </>
+                ) : service ? (
+                  "Atualizar serviço"
+                ) : (
+                  "Criar serviço"
+                )}
+              </Button>
+            </DialogFooter>
+          )}
         </form>
       </Form>
-    </DialogContent>
+    </ServiceFormWrapper>
   );
 };
+
+function ServiceFormWrapper({
+  embedded,
+  children,
+  service,
+}: {
+  embedded: boolean;
+  children: React.ReactNode;
+  service?: ServiceWithDocuments;
+}) {
+  if (embedded) {
+    return <div className="space-y-4">{children}</div>;
+  }
+  return (
+    <DialogContent className="max-w-3xl">
+      <DialogTitle>{service ? "Editar serviço" : "Novo serviço"}</DialogTitle>
+      <DialogDescription>
+        {service
+          ? "Atualize as informações do serviço oferecido."
+          : "Cadastre um novo serviço para os cidadãos."}
+      </DialogDescription>
+      {children}
+    </DialogContent>
+  );
+}
 
 export default UpsertServiceForm;
 

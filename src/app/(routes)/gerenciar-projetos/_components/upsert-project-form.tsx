@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useAction } from "next-safe-action/hooks";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -26,28 +27,49 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { ProjectWithDocuments } from "@/types/content-management";
+
+const PROJECT_STATUSES = [
+  { value: "active", label: "Ativo" },
+  { value: "inactive", label: "Inativo" },
+  { value: "draft", label: "Rascunho" },
+] as const;
 
 interface UpsertProjectFormProps {
   project?: ProjectWithDocuments;
   onSuccess?: () => void;
+  /** Quando true, renderiza apenas o formulário (para página [id]); quando false, dentro de DialogContent (criação). */
+  embedded?: boolean;
 }
 
 const formSchema = upsertProjectSchema.omit({ id: true });
 
 type FormValues = z.infer<typeof formSchema>;
 
-const getDefaultValues = (project?: ProjectWithDocuments) => ({
+const getDefaultValues = (project?: ProjectWithDocuments): FormValues => ({
   title: project?.title ?? "",
   slug: project?.slug ?? "",
   summary: project?.summary ?? "",
   description: project?.description ?? "",
   coverImageUrl: project?.coverImageUrl ?? "",
   emphasis: project?.emphasis ?? false,
+  status: project?.status ?? "active",
 });
 
-const UpsertProjectForm = ({ project, onSuccess }: UpsertProjectFormProps) => {
+const UpsertProjectForm = ({
+  project,
+  onSuccess,
+  embedded = false,
+}: UpsertProjectFormProps) => {
+  const router = useRouter();
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: getDefaultValues(project),
@@ -66,8 +88,12 @@ const UpsertProjectForm = ({ project, onSuccess }: UpsertProjectFormProps) => {
           ? "Projeto atualizado com sucesso!"
           : "Projeto criado com sucesso!",
       );
-      onSuccess?.();
-      form.reset(getDefaultValues(project));
+      if (embedded) {
+        router.refresh();
+      } else {
+        onSuccess?.();
+        form.reset(getDefaultValues(project));
+      }
     },
     onError: (error) => {
       const message =
@@ -114,13 +140,7 @@ const UpsertProjectForm = ({ project, onSuccess }: UpsertProjectFormProps) => {
   };
 
   return (
-    <DialogContent className="max-w-3xl">
-      <DialogTitle>{project ? "Editar projeto" : "Novo projeto"}</DialogTitle>
-      <DialogDescription>
-        {project
-          ? "Atualize as informações do projeto."
-          : "Cadastre um novo projeto institucional."}
-      </DialogDescription>
+    <Wrapper embedded={embedded} project={project}>
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
@@ -149,6 +169,34 @@ const UpsertProjectForm = ({ project, onSuccess }: UpsertProjectFormProps) => {
                   <FormControl>
                     <Input placeholder="slug-do-projeto" {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Status</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    value={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o status" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {PROJECT_STATUSES.map((s) => (
+                        <SelectItem key={s.value} value={s.value}>
+                          {s.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -266,22 +314,62 @@ const UpsertProjectForm = ({ project, onSuccess }: UpsertProjectFormProps) => {
             )}
           />
 
-          <DialogFooter>
-            <Button type="submit" disabled={status === "executing"}>
-              {status === "executing" ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Salvando...
-                </>
-              ) : project ? (
-                "Atualizar projeto"
-              ) : (
-                "Criar projeto"
-              )}
-            </Button>
-          </DialogFooter>
+          {embedded ? (
+            <div className="flex justify-end pt-4">
+              <Button type="submit" disabled={status === "executing"}>
+                {status === "executing" ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Salvando...
+                  </>
+                ) : (
+                  "Atualizar projeto"
+                )}
+              </Button>
+            </div>
+          ) : (
+            <DialogFooter>
+              <Button type="submit" disabled={status === "executing"}>
+                {status === "executing" ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Salvando...
+                  </>
+                ) : project ? (
+                  "Atualizar projeto"
+                ) : (
+                  "Criar projeto"
+                )}
+              </Button>
+            </DialogFooter>
+          )}
         </form>
       </Form>
+    </Wrapper>
+  );
+};
+
+const Wrapper = ({
+  embedded,
+  children,
+  project,
+}: {
+  embedded: boolean;
+  children: React.ReactNode;
+  project?: ProjectWithDocuments;
+}) => {
+  if (embedded) {
+    return <div className="space-y-4">{children}</div>;
+  }
+  return (
+    <DialogContent className="max-w-3xl">
+      <DialogTitle>{project ? "Editar projeto" : "Novo projeto"}</DialogTitle>
+      <DialogDescription>
+        {project
+          ? "Atualize as informações do projeto."
+          : "Cadastre um novo projeto institucional."}
+      </DialogDescription>
+      {children}
     </DialogContent>
   );
 };

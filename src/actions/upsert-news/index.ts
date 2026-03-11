@@ -38,6 +38,7 @@ export const upsertNews = actionClient
       };
     }
 
+    let newsId: string | undefined;
     await db.transaction(async (tx) => {
       const [result] = await tx
         .insert(newsTable)
@@ -68,7 +69,7 @@ export const upsertNews = actionClient
         })
         .returning({ id: newsTable.id });
 
-      const newsId = result?.id ?? parsedInput.id;
+      newsId = result?.id ?? parsedInput.id;
 
       if (!newsId) {
         throw new Error("Falha ao salvar notícia.");
@@ -76,6 +77,9 @@ export const upsertNews = actionClient
     });
 
     revalidatePath("/gerenciar-noticias");
+    if (newsId) {
+      revalidatePath(`/gerenciar-noticias/${newsId}`);
+    }
 
     return { success: true };
   });

@@ -1,6 +1,7 @@
 import { LucideIcon } from "lucide-react";
 import Link from "next/link";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 interface ServiceCardProps {
@@ -8,26 +9,26 @@ interface ServiceCardProps {
   name: string;
   description: string;
   slug: string;
-  href?: string; // Mantido para compatibilidade, mas slug será usado se fornecido
+  href?: string;
   status?: "active" | "inactive";
+  emphasis?: boolean;
   icon?: LucideIcon;
   order?: number;
 }
 
 export default function ServiceCard({
-  id, // Usado para identificação única do backend
+  id,
   name,
   description,
   slug,
   href,
   status = "active",
+  emphasis,
   icon: Icon,
-  order, // Usado para ordenação no backend
+  order,
 }: ServiceCardProps) {
-  // Usa slug para construir href se href não for fornecido
   const cardHref = href || `/servicos/${slug}`;
 
-  // Não renderiza se estiver inativo
   if (status === "inactive") {
     return null;
   }
@@ -44,10 +45,18 @@ export default function ServiceCard({
           aria-hidden="true"
         />
       )}
-      <h3 className="text-foreground group-hover:text-primary relative z-10 mb-2 text-xl font-semibold transition-colors duration-300">
-        {name}
-      </h3>
-      <p className="text-muted-foreground group-hover:text-foreground/80 relative z-10 mb-4 grow text-sm transition-colors duration-300">
+      <div className="relative z-10 mb-2 flex flex-wrap items-center gap-2">
+        <h3 className="text-foreground group-hover:text-primary text-xl font-semibold transition-colors duration-300">
+          {name}
+        </h3>
+        {emphasis && (
+          <Badge variant="secondary">Em destaque</Badge>
+        )}
+        <Badge variant={status === "active" ? "default" : "secondary"}>
+          {status === "active" ? "Ativo" : "Inativo"}
+        </Badge>
+      </div>
+      <p className="text-muted-foreground group-hover:text-foreground/80 relative z-10 mb-4 grow text-sm transition-colors duration-300 line-clamp-2">
         {description}
       </p>
       <div className="relative z-10 mt-auto flex justify-end">

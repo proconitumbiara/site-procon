@@ -68,6 +68,7 @@ export default async function NoticiasPage() {
                   imageAlt={news.title}
                   publishedAt={news.publishedAt || news.createdAT}
                   status={news.isPublished ? "published" : "draft"}
+                  emphasis={news.emphasis}
                 />
               ))}
             </div>
