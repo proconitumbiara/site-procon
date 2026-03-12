@@ -1,5 +1,25 @@
 import { z } from "zod";
 
+/** Padroniza nome: trim, colapsa espaços múltiplos e aplica capitalização (primeira letra de cada palavra em maiúscula). */
+function standardizeFullName(value: string): string {
+  return value
+    .trim()
+    .replace(/\s+/g, " ")
+    .split(" ")
+    .map((word) =>
+      word.length > 0
+        ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+        : "",
+    )
+    .filter(Boolean)
+    .join(" ");
+}
+
+/** Extrai apenas os dígitos do telefone. */
+function digitsOnly(value: string): string {
+  return value.replace(/\D/g, "");
+}
+
 const PARTICIPANT_CATEGORY = ["student", "employee"] as const;
 const STUDENT_PERIODS = ["8º Ano", "9º Ano"] as const;
 const SCHOOLS = [
@@ -29,11 +49,17 @@ export const createFormRegistrationSchema = z
     participantFullName: z
       .string()
       .trim()
-      .min(1, "Por favor, informe seu nome completo"),
+      .min(1, "Por favor, informe seu nome completo")
+      .transform(standardizeFullName),
     participantPhone: z
       .string()
       .trim()
-      .min(1, "Por favor, informe seu telefone para contato"),
+      .min(1, "Por favor, informe seu telefone para contato")
+      .refine(
+        (val) => digitsOnly(val).length === 11,
+        "Informe um telefone válido com 11 dígitos (DDD + número)",
+      )
+      .transform((val) => digitsOnly(val)),
     participantBirthDate: z
       .string()
       .min(1, "Por favor, informe sua data de nascimento")
