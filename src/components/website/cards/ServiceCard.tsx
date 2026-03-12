@@ -1,7 +1,6 @@
 import { LucideIcon } from "lucide-react";
 import Link from "next/link";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 interface ServiceCardProps {
@@ -23,7 +22,6 @@ export default function ServiceCard({
   slug,
   href,
   status = "active",
-  emphasis,
   icon: Icon,
   order,
 }: ServiceCardProps) {
@@ -45,16 +43,10 @@ export default function ServiceCard({
           aria-hidden="true"
         />
       )}
-      <div className="relative z-10 mb-2 flex flex-wrap items-center gap-2">
+      <div className="relative z-10 mb-2">
         <h3 className="text-foreground group-hover:text-primary text-xl font-semibold transition-colors duration-300">
           {name}
         </h3>
-        {emphasis && (
-          <Badge variant="secondary">Em destaque</Badge>
-        )}
-        <Badge variant={status === "active" ? "default" : "secondary"}>
-          {status === "active" ? "Ativo" : "Inativo"}
-        </Badge>
       </div>
       <p className="text-muted-foreground group-hover:text-foreground/80 relative z-10 mb-4 grow text-sm transition-colors duration-300 line-clamp-2">
         {description}
