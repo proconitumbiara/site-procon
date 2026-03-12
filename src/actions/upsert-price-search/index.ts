@@ -89,6 +89,7 @@ export const upsertPriceSearch = actionClient
       }
     });
 
+    revalidatePath("/");
     revalidatePath("/gerenciar-pesquisas");
 
     return { success: true };

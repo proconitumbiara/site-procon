@@ -72,6 +72,7 @@ export const upsertService = actionClient
       }
     });
 
+    revalidatePath("/");
     revalidatePath("/gerenciar-servicos");
     if (serviceId) {
       revalidatePath(`/gerenciar-servicos/${serviceId}`);

@@ -68,6 +68,7 @@ export const upsertProject = actionClient
       }
     });
 
+    revalidatePath("/");
     revalidatePath("/gerenciar-projetos");
     if (projectId) {
       revalidatePath(`/gerenciar-projetos/${projectId}`);

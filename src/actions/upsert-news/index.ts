@@ -76,6 +76,7 @@ export const upsertNews = actionClient
       }
     });
 
+    revalidatePath("/");
     revalidatePath("/gerenciar-noticias");
     if (newsId) {
       revalidatePath(`/gerenciar-noticias/${newsId}`);
