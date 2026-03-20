@@ -118,8 +118,8 @@ export function RegistrarDenunciaForm() {
         {/* 1) Solicitação Anônima */}
         <div className="space-y-4">
           <div className="space-y-2">
-            <h3 className="text-lg font-semibold">1) Solicitar Fiscalização pelo PROCON</h3>
-            <p className="text-sm text-muted-foreground">Solicitação Anônima:</p>
+            <h3 className="text-lg font-semibold">Identificação</h3>
+            <p className="text-sm text-muted-foreground">Você deseja registrar a denúncia de forma anônima?</p>
           </div>
 
           <FormField
@@ -162,7 +162,10 @@ export function RegistrarDenunciaForm() {
         {/* 2) Qualificação do denunciante (condicional) */}
         {!isAnonymous && (
           <div className="space-y-4 rounded-xl border p-4">
-            <h3 className="text-lg font-semibold">2) Qualificação do (a) denunciante (Consumidor)</h3>
+            <div>
+              <h3 className="text-lg font-semibold">Denunciante</h3>
+              <p className="text-sm text-muted-foreground">Informe seus dados para que possamos contatar você caso necessário. Todos os seus dados são confidenciais e não serão compartilhados com terceiros.</p>
+            </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <FormField
@@ -287,7 +290,10 @@ export function RegistrarDenunciaForm() {
 
         {/* 3) Qualificação do denunciado (Fornecedor) */}
         <div className="space-y-4 rounded-xl border p-4">
-          <h3 className="text-lg font-semibold">3) Qualificação do denunciado (Fornecedor)</h3>
+          <div>
+            <h3 className="text-lg font-semibold">Denunciado</h3>
+            <p className="text-sm text-muted-foreground">Informe os dados da empresa ou prestador de serviço.</p>
+          </div>
 
           <div className="grid gap-4 md:grid-cols-2">
             <FormField
@@ -374,13 +380,10 @@ export function RegistrarDenunciaForm() {
 
         {/* 4) Relato dos fatos */}
         <div className="space-y-4 rounded-xl border p-4">
-          <h3 className="text-lg font-semibold">4) Relato dos Fatos (Descrição circunstanciada)</h3>
-          <p className="text-sm text-muted-foreground">
-            Descreva detalhadamente o fato/problema, incluindo dados do evento
-            (data/hora ou período), produto/serviço, valor, forma de pagamento,
-            local, nomes de pessoas envolvidas, respostas negativas ou falta de
-            solução, e número de protocolos das tentativas.
-          </p>
+          <div>
+            <h3 className="text-lg font-semibold">Relato dos Fatos</h3>
+            <p className="text-sm text-muted-foreground">Descreva detalhadamente o fato/problema, incluindo dados do evento (data/hora ou período), produto/serviço, valor, forma de pagamento, local, nomes de pessoas envolvidas, respostas negativas ou falta de solução, e número de protocolos das tentativas.</p>
+          </div>
 
           <FormField
             control={form.control}
@@ -403,10 +406,10 @@ export function RegistrarDenunciaForm() {
 
         {/* 5) Do Pedido */}
         <div className="space-y-4 rounded-xl border p-4">
-          <h3 className="text-lg font-semibold">5) Do Pedido</h3>
-          <p className="text-sm text-muted-foreground">
-            O que você requer ao PROCON?
-          </p>
+          <div>
+            <h3 className="text-lg font-semibold">Pedido</h3>
+            <p className="text-sm text-muted-foreground">Informe o que você requer ao Procon Itumbiara em relação à denúncia.</p>
+          </div>
 
           <FormField
             control={form.control}
@@ -429,10 +432,10 @@ export function RegistrarDenunciaForm() {
 
         {/* 6) Meios de prova */}
         <div className="space-y-4 rounded-xl border p-4">
-          <h3 className="text-lg font-semibold">6) Indicação dos meios de prova</h3>
-          <p className="text-sm text-muted-foreground">
-            Indique abaixo os meios com os quais pretende provar suas alegações.
-          </p>
+          <div>
+            <h3 className="text-lg font-semibold">Meios de Prova</h3>
+            <p className="text-sm text-muted-foreground">Indique abaixo os meios com os quais pretende provar suas alegações.</p>
+          </div>
 
           <FormField
             control={form.control}
@@ -464,26 +467,6 @@ export function RegistrarDenunciaForm() {
                       </FormLabel>
                     </div>
                   </RadioGroup>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        {/* Data de protocolo (conforme PDF) */}
-        <div className="space-y-2 rounded-xl border p-4">
-          <h3 className="text-lg font-semibold">Data</h3>
-          <p className="text-sm text-muted-foreground">Itumbiara, ____ de _________________ de 20____.</p>
-
-          <FormField
-            control={form.control}
-            name="filingDate"
-            render={({ field }) => (
-              <FormItem className="max-w-72">
-                <FormLabel>Data da solicitação</FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

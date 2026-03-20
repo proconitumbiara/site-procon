@@ -8,8 +8,8 @@ export default function RegistrarDenunciaPage() {
       <div className="container mx-auto px-4 py-6 sm:px-6 sm:py-8 lg:px-8 flex flex-col items-center bg-">
         <Section
           id="registrar-denuncia"
-          title="Formulário de Denúncia - PROCON"
-          description="Preencha os campos abaixo para solicitar fiscalização. Ao enviar, seus dados serão encaminhados ao órgão competente."
+          title="Formulário de Denúncia - Procon Itumbiara"
+          description="Preencha os campos abaixo para registrar uma denúncia. Ao enviar, seus dados serão encaminhados ao Procon Itumbiara."
           variant="default"
         >
           <RegistrarDenunciaForm />
