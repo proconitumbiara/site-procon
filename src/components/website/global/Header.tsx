@@ -152,10 +152,6 @@ export default function Header() {
                   </button>
                 </div>
               </form>
-
-              <Link href="/auth/sign-in">
-                <User className="h-6 w-6 transition-all duration-300 hover:scale-110 hidden lg:block" />
-              </Link>
             </div>
           </div>
         </div>
@@ -178,8 +174,8 @@ export default function Header() {
                     key={item.href}
                     href={item.href}
                     className={`rounded-lg px-8 py-2 text-sm font-medium no-underline transition-colors ${active
-                        ? "bg-white text-[#192f58]"
-                        : "text-white hover:bg-white/20"
+                      ? "bg-white text-[#192f58]"
+                      : "text-white hover:bg-white/20"
                       } `}
                     onClick={closeMenu}
                   >
@@ -244,8 +240,8 @@ export default function Header() {
                       key={item.href}
                       href={item.href}
                       className={`block rounded-md px-3 py-2 text-base font-medium no-underline transition-colors ${active
-                          ? "bg-white text-[#192f58]"
-                          : "text-white hover:bg-white/80"
+                        ? "bg-white text-[#192f58]"
+                        : "text-white hover:bg-white/80"
                         } focus:ring-2 focus:ring-[#192f58] focus:ring-offset-2 focus:outline-none`}
                       onClick={closeMenu}
                     >
