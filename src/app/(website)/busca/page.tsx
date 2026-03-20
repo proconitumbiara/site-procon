@@ -189,12 +189,16 @@ export default async function BuscaPage({ searchParams }: BuscaPageProps) {
                       <ServiceCard
                         key={service.id}
                         id={service.id}
-                        name={service.title}
+                        title={service.title}
                         description={
                           service.description ||
                           "Descrição detalhada deste serviço estará disponível em breve."
                         }
-                        slug={service.slug}
+                        href={
+                          service.slug === "denuncia"
+                            ? "/formularios/registrar-denuncia"
+                            : `/servicos/${service.slug}`
+                        }
                         status={service.isActive ? "active" : "inactive"}
                       />
                     ))}

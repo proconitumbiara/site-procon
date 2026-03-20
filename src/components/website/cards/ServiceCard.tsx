@@ -2,13 +2,13 @@ import { LucideIcon } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+import IconButtonLink from "../global/IconButtonLink";
 
 interface ServiceCardProps {
-  id: string | number;
-  name: string;
+  id?: string | number;
+  title: string;
   description: string;
-  slug: string;
-  href?: string;
+  href: string;
   status?: "active" | "inactive";
   emphasis?: boolean;
   icon?: LucideIcon;
@@ -17,19 +17,18 @@ interface ServiceCardProps {
 
 export default function ServiceCard({
   id,
-  name,
+  title,
   description,
-  slug,
   href,
   status = "active",
   icon: Icon,
   order,
 }: ServiceCardProps) {
-  const cardHref = href || `/servicos/${slug}`;
-
   if (status === "inactive") {
     return null;
   }
+
+  const isDenuncia = href === "/formularios/registrar-denuncia";
 
   return (
     <div
@@ -45,22 +44,35 @@ export default function ServiceCard({
       )}
       <div className="relative z-10 mb-2">
         <h3 className="text-foreground group-hover:text-primary text-xl font-semibold transition-colors duration-300">
-          {name}
+          {title}
         </h3>
       </div>
       <p className="text-muted-foreground group-hover:text-foreground/80 relative z-10 mb-4 grow text-sm transition-colors duration-300 line-clamp-2">
         {description}
       </p>
-      <div className="relative z-10 mt-auto flex justify-end">
-        <Button
-          asChild
-          variant="outline"
-          className="group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all duration-300 group-hover:scale-105"
-        >
-          <Link href={cardHref} className="no-underline">
-            Acessar
-          </Link>
-        </Button>
+      <div className="relative z-10 mt-auto flex justify-between">
+
+        {isDenuncia && (
+          <div className="shrink-0">
+            <IconButtonLink
+              label="Registrar denúncia"
+              url={href}
+            />
+          </div>
+        )}
+
+        {!isDenuncia && (
+          <Button
+            asChild
+            variant="outline"
+            className="group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all duration-300 group-hover:scale-105"
+          >
+            <Link href={href} className="no-underline">
+              Ver mais
+            </Link>
+          </Button>
+        )}
+
       </div>
     </div>
   );

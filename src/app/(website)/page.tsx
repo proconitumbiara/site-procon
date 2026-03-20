@@ -17,7 +17,6 @@ import { getAllPriceSearches } from "@/lib/data/content";
 import {
   getIndexProjects,
   getIndexPublishedNews,
-  getIndexServices,
 } from "@/lib/data/index-content";
 import { redirect } from "next/navigation";
 
@@ -31,15 +30,35 @@ const SERVICE_ICON_MAP: Record<string, LucideIcon | undefined> = {
   "educacao-para-o-consumo": Book,
 };
 
+const SERVICES: Array<{
+  id: string;
+  title: string;
+  description: string;
+  href: string;
+}> = [
+  {
+    id: "abertura-de-reclamacao",
+    title: "Abertura de Reclamação",
+    description:
+      "O serviço de abertura de reclamação do Procon permite que o consumidor registre formalmente problemas relacionados a relações de consumo e acompanhe a mediação para buscar uma solução administrativa.",
+    href: "/servicos/abertura-de-reclamacao",
+  },
+  {
+    id: "denuncia",
+    title: "Denúncia",
+    description:
+      "Registre uma denúncia sobre situações que possam violar direitos do consumidor. Após o envio, o Procon orienta os próximos passos conforme o caso.",
+    href: "/formularios/registrar-denuncia",
+  },
+];
+
 export default async function Home() {
-  const [services, projects, newsItems, priceSearches] = await Promise.all([
-    getIndexServices(),
+  const [projects, newsItems, priceSearches] = await Promise.all([
     getIndexProjects(),
     getIndexPublishedNews(),
     getAllPriceSearches(),
   ]);
 
-  const featuredServices = services.slice(0, 3);
   const featuredProjects = projects.slice(0, 3);
   const featuredNews = newsItems.slice(0, 3);
 
@@ -97,29 +116,18 @@ export default async function Home() {
           actionLink="/servicos"
           actionLabel="Todos os serviços"
         >
-          {featuredServices.length > 0 ? (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {featuredServices.map((service) => (
+              {SERVICES.map((service) => (
                 <ServiceCard
                   key={service.id}
                   id={service.id}
-                  name={service.title}
-                  description={
-                    service.description ||
-                    "Descrição deste serviço estará disponível em breve."
-                  }
-                  slug={service.slug}
-                  status={service.isActive ? "active" : "inactive"}
-                  icon={SERVICE_ICON_MAP[service.slug]}
+                  title={service.title}
+                  description={service.description}
+                  href={service.href}
+                  icon={SERVICE_ICON_MAP[service.id]}
                 />
               ))}
             </div>
-          ) : (
-            <p className="text-muted-foreground">
-              Ainda não há serviços cadastrados. Assim que disponíveis, eles
-              aparecerão aqui.
-            </p>
-          )}
         </Section>
 
         {/* Pesquisas */}

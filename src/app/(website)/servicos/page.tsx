@@ -11,14 +11,30 @@ import {
 import ServiceCard from "@/components/website/cards/ServiceCard";
 import Footer from "@/components/website/global/Footer";
 import Header from "@/components/website/global/Header";
-import { getActiveServices } from "@/lib/data/content";
 
-export const dynamic = 'force-dynamic';
+const SERVICES: Array<{
+  id: string;
+  title: string;
+  description: string;
+  href: string;
+}> = [
+  {
+    id: "abertura-de-reclamacao",
+    title: "Abertura de Reclamação",
+    description:
+      "O serviço de abertura de reclamação do Procon permite que o consumidor registre formalmente problemas relacionados a relações de consumo e acompanhe a mediação para buscar uma solução administrativa.",
+    href: "/servicos/abertura-de-reclamacao",
+  },
+  {
+    id: "denuncia",
+    title: "Denúncia",
+    description:
+      "Registre uma denúncia sobre situações que possam violar direitos do consumidor. Após o envio, o Procon orienta os próximos passos conforme o caso.",
+    href: "/formularios/registrar-denuncia",
+  },
+];
 
-export default async function ServicosPage() {
-  const services = await getActiveServices();
-  const hasServices = services.length > 0;
-
+export default function ServicosPage() {
   return (
     <>
       <Header />
@@ -51,29 +67,17 @@ export default async function ServicosPage() {
           </div>
 
           {/* Grid de serviços */}
-          {hasServices ? (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {services.map((service) => (
+              {SERVICES.map((service) => (
                 <ServiceCard
                   key={service.id}
                   id={service.id}
-                  name={service.title}
-                  description={
-                    service.description ||
-                    "Descrição detalhada deste serviço estará disponível em breve."
-                  }
-                  slug={service.slug}
-                  status={service.isActive ? "active" : "inactive"}
-                  emphasis={service.emphasis}
+                  title={service.title}
+                  description={service.description}
+                  href={service.href}
                 />
               ))}
             </div>
-          ) : (
-            <div className="border-border text-muted-foreground rounded-lg border border-dashed p-10 text-center">
-              Ainda não há serviços cadastrados. Assim que disponíveis, eles
-              aparecerão nesta página.
-            </div>
-          )}
         </div>
       </main>
       <Footer />
