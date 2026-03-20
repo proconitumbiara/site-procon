@@ -52,11 +52,6 @@ const itemsWebSite = [
     url: "/gerenciar-projetos",
     icon: BriefcaseBusinessIcon,
   },
-  {
-    title: "Serviços",
-    url: "/gerenciar-servicos",
-    icon: HammerIcon,
-  },
 ];
 
 const itemsFormularios = [
