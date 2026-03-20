@@ -29,24 +29,24 @@ function digitsOnlyOrUndefined(value: unknown): string | undefined {
 const EvidenceTypeEnumValues = ["documental", "photos_video", "none"] as const;
 export const evidenceTypeEnum = z.enum(EvidenceTypeEnumValues);
 
-const optionalTrimmedString = z
-  .preprocess(emptyStringToUndefined, z.string())
-  .optional();
+// Importante: `preprocess` converte `""` para `undefined`.
+// Para campos opcionais, precisamos que o schema interno aceite `undefined`,
+// senão o Zod tenta validar `undefined` como string e gera erro.
+const optionalTrimmedString = z.preprocess(
+  emptyStringToUndefined,
+  z.string().optional(),
+);
 
 const optionalDigitsString = z
-  .preprocess(digitsOnlyOrUndefined, z.string())
-  .optional();
+  .preprocess(digitsOnlyOrUndefined, z.string().optional());
 
-const optionalStandardizedName = z
-  .preprocess(
-    (value) => {
-      if (typeof value !== "string") return undefined;
-      const normalized = standardizeFullName(value);
-      return normalized.length ? normalized : undefined;
-    },
-    z.string(),
-  )
-  .optional();
+const standardizedNameSchema = z.preprocess(
+  (value) => {
+    if (typeof value !== "string") return "";
+    return standardizeFullName(value);
+  },
+  z.string(),
+);
 
 const cpfSchema = optionalDigitsString.refine(
   (value) => value == null || value.length === 11,
@@ -81,14 +81,16 @@ export const createComplaintSchema = z
     isAnonymous: z.boolean(),
 
     // Seção 2 - Qualificação do Denunciante (Consumidor)
-    complainantName: optionalStandardizedName,
+    complainantName: standardizedNameSchema,
     complainantProfession: optionalTrimmedString,
     complainantCpf: cpfSchema,
     complainantPhone: phoneSchema,
+    // Observação: como usamos `preprocess` para converter `""` em `undefined`,
+    // o schema interno também precisa aceitar `undefined` (por isso `.optional()` aqui).
     complainantEmail: z.preprocess(
       emptyStringToUndefined,
-      z.string().email("Informe um e-mail válido."),
-    ).optional(),
+      z.string().email("Informe um e-mail válido.").optional(),
+    ),
     complainantAddress: optionalTrimmedString,
     complainantZipCode: zipCodeSchema,
 
@@ -98,10 +100,11 @@ export const createComplaintSchema = z
       .trim()
       .min(1, "Razão Social/Nome Fantasia é obrigatório."),
     respondentCnpj: cnpjSchema.optional(),
+    // A rota externa exige `respondentAddress` e `respondentZipCode`.
     respondentAddress: z
       .string()
       .trim()
-      .min(10, "Endereço do denunciado é obrigatório."),
+      .min(1, "Informe o endereço do fornecedor."),
     respondentZipCode: requiredZipCodeSchema,
     respondentAdditionalInfo: optionalTrimmedString,
 
@@ -109,13 +112,13 @@ export const createComplaintSchema = z
     factsDescription: z
       .string()
       .trim()
-      .min(20, "O relato dos fatos é obrigatório e deve ter mais detalhes."),
+      .min(1, "O relato dos fatos é obrigatório."),
 
     // Seção 5 - Do Pedido
     request: z
       .string()
       .trim()
-      .min(10, "O pedido é obrigatório."),
+      .min(1, "O pedido é obrigatório."),
 
     // Seção 6 - Meios de Prova
     evidenceType: evidenceTypeEnum,
@@ -126,65 +129,26 @@ export const createComplaintSchema = z
       .trim()
       .min(1, "Informe a data da solicitação.")
       .refine(
-        (value) => {
-          const time = Date.parse(value);
-          return !Number.isNaN(time);
-        },
+        (value) => /^\d{4}-\d{2}-\d{2}$/.test(value),
+        "filingDate deve estar no formato YYYY-MM-DD",
+      )
+      .refine(
+        (value) => !Number.isNaN(Date.parse(value)),
         "Informe uma data válida.",
       ),
   })
   .superRefine((data, ctx) => {
-    if (data.isAnonymous) return;
-
-    // Se não for anônimo, exigimos todos os dados da seção 2.
-    if (!data.complainantName) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["complainantName"],
-        message: "Informe o nome completo.",
-      });
-    }
-    if (!data.complainantProfession) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["complainantProfession"],
-        message: "Informe a profissão.",
-      });
-    }
-    if (!data.complainantCpf) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["complainantCpf"],
-        message: "Informe o CPF.",
-      });
-    }
-    if (!data.complainantPhone) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["complainantPhone"],
-        message: "Informe o telefone.",
-      });
-    }
-    if (!data.complainantEmail) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["complainantEmail"],
-        message: "Informe o e-mail.",
-      });
-    }
-    if (!data.complainantAddress) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["complainantAddress"],
-        message: "Informe o endereço.",
-      });
-    }
-    if (!data.complainantZipCode) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["complainantZipCode"],
-        message: "Informe o CEP.",
-      });
+    // Regras condicionais:
+    // - Se NÃO for anônimo, exigimos apenas o nome do denunciante.
+    // - Se for anônimo, nenhum dado do denunciante é obrigatório.
+    if (!data.isAnonymous) {
+      if (!data.complainantName.trim().length) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["complainantName"],
+          message: "Informe o nome do denunciante.",
+        });
+      }
     }
   });
 

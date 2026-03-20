@@ -8,6 +8,22 @@ function cleanBaseUrl(url: string): string {
   return url.replace(/\/+$/, "");
 }
 
+function mapEvidenceTypeToExternal(
+  evidenceType: string,
+): "documentary" | "photo_video" | "none" {
+  // A UI usa valores PT (documental/photos_video), mas a rota externa espera EN.
+  switch (evidenceType) {
+    case "documental":
+      return "documentary";
+    case "photos_video":
+      return "photo_video";
+    case "none":
+      return "none";
+    default:
+      return "none";
+  }
+}
+
 export const createComplaint = actionClient
   .schema(createComplaintSchema)
   .action(async ({ parsedInput }) => {
@@ -30,7 +46,7 @@ export const createComplaint = actionClient
       };
     }
 
-    const endpoint = `${cleanBaseUrl(apiBaseUrl)}/api/complaint`;
+    const endpoint = `${cleanBaseUrl(apiBaseUrl)}`;
 
     const payload = {
       isAnonymous: parsedInput.isAnonymous,
@@ -59,7 +75,7 @@ export const createComplaint = actionClient
 
       factsDescription: parsedInput.factsDescription,
       request: parsedInput.request,
-      evidenceType: parsedInput.evidenceType,
+      evidenceType: mapEvidenceTypeToExternal(parsedInput.evidenceType),
 
       filingDate: parsedInput.filingDate,
     };
@@ -98,6 +114,36 @@ export const createComplaint = actionClient
       };
     }
 
-    return { success: true };
-  });
+    // A API externa deve retornar um "id" (ou variação) para permitir o upload das provas.
+    const body = responseBody as {
+      id?: unknown;
+      complaintId?: unknown;
+      data?: { id?: unknown };
+    } | null;
 
+    const complaintIdRaw =
+      body?.id ??
+      body?.complaintId ??
+      body?.data?.id ??
+      (typeof responseBody === "object" &&
+        responseBody !== null &&
+        "data" in responseBody &&
+        (responseBody as { data?: { complaintId?: unknown } }).data
+          ?.complaintId);
+
+    const complaintId =
+      complaintIdRaw != null && complaintIdRaw !== ""
+        ? String(complaintIdRaw)
+        : undefined;
+
+    if (!complaintId) {
+      return {
+        error: {
+          message:
+            "Resposta da API externa inválida: não foi possível obter o código da denúncia (id).",
+        },
+      };
+    }
+
+    return { success: true, complaintId };
+  });
