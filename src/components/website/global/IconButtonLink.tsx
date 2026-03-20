@@ -28,7 +28,12 @@ export default function IconButtonLink({
 }: IconButtonLinkProps) {
   return (
     <Button asChild variant={variant} className={className}>
-      <Link href={url} className="no-underline">
+      <Link
+        href={url}
+        className="no-underline"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
         {Icon && <Icon aria-hidden="true" />}
         <span className="whitespace-nowrap">{label}</span>
       </Link>
