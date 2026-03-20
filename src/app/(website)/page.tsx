@@ -18,7 +18,7 @@ import {
   getIndexProjects,
   getIndexPublishedNews,
 } from "@/lib/data/index-content";
-import { redirect } from "next/navigation";
+import Location from "@/components/website/global/location";
 
 const DEFAULT_PROJECT_IMAGE = "/LogoVertical.png";
 const DEFAULT_NEWS_IMAGE = "/LogoVertical.png";
@@ -36,21 +36,21 @@ const SERVICES: Array<{
   description: string;
   href: string;
 }> = [
-  {
-    id: "abertura-de-reclamacao",
-    title: "Abertura de Reclamação",
-    description:
-      "O serviço de abertura de reclamação do Procon permite que o consumidor registre formalmente problemas relacionados a relações de consumo e acompanhe a mediação para buscar uma solução administrativa.",
-    href: "/servicos/abertura-de-reclamacao",
-  },
-  {
-    id: "denuncia",
-    title: "Denúncia",
-    description:
-      "Registre uma denúncia sobre situações que possam violar direitos do consumidor. Após o envio, o Procon orienta os próximos passos conforme o caso.",
-    href: "/formularios/registrar-denuncia",
-  },
-];
+    {
+      id: "abertura-de-reclamacao",
+      title: "Abertura de Reclamação",
+      description:
+        "O serviço de abertura de reclamação do Procon permite que o consumidor registre formalmente problemas relacionados a relações de consumo e acompanhe a mediação para buscar uma solução administrativa.",
+      href: "/servicos/abertura-de-reclamacao",
+    },
+    {
+      id: "denuncia",
+      title: "Denúncia",
+      description:
+        "Registre uma denúncia sobre situações que possam violar direitos do consumidor. Após o envio, o Procon orienta os próximos passos conforme o caso.",
+      href: "/formularios/registrar-denuncia",
+    },
+  ];
 
 export default async function Home() {
   const [projects, newsItems, priceSearches] = await Promise.all([
@@ -116,18 +116,18 @@ export default async function Home() {
           actionLink="/servicos"
           actionLabel="Todos os serviços"
         >
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {SERVICES.map((service) => (
-                <ServiceCard
-                  key={service.id}
-                  id={service.id}
-                  title={service.title}
-                  description={service.description}
-                  href={service.href}
-                  icon={SERVICE_ICON_MAP[service.id]}
-                />
-              ))}
-            </div>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {SERVICES.map((service) => (
+              <ServiceCard
+                key={service.id}
+                id={service.id}
+                title={service.title}
+                description={service.description}
+                href={service.href}
+                icon={SERVICE_ICON_MAP[service.id]}
+              />
+            ))}
+          </div>
         </Section>
 
         {/* Pesquisas */}
@@ -323,6 +323,12 @@ export default async function Home() {
             />
           </div>
         </Section>
+
+        {/* Endereço */}
+
+        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-0">
+          <Location />
+        </div>
       </main>
       <Footer />
     </>
