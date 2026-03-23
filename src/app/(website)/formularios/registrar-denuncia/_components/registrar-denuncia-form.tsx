@@ -68,14 +68,6 @@ function isAllowedMediaVideoOrAudio(file: File): boolean {
   return isMp4 || isMp3;
 }
 
-function getTodayInputValue(): string {
-  const d = new Date();
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
-}
-
 const getDefaultValues = (): FormValues => ({
   isAnonymous: false,
 
@@ -92,14 +84,10 @@ const getDefaultValues = (): FormValues => ({
   respondentCompanyName: "",
   respondentCnpj: "",
   respondentAddress: "",
-  respondentZipCode: "",
   respondentAdditionalInfo: "",
 
   factsDescription: "",
   request: "",
-  evidenceType: "none",
-
-  filingDate: getTodayInputValue(),
 });
 
 export function RegistrarDenunciaForm() {
@@ -112,6 +100,7 @@ export function RegistrarDenunciaForm() {
 
   const isAnonymous = form.watch("isAnonymous");
   const evidenceType = form.watch("evidenceType");
+  const isValid = form.formState.isValid;
 
   const [flowOpen, setFlowOpen] = useState(false);
   const [flowStep, setFlowStep] = useState<EvidenceFlowStep>("idle");
@@ -151,22 +140,6 @@ export function RegistrarDenunciaForm() {
   }, [form, isAnonymous]);
 
   const isBusy = flowStep === "sending" || flowStep === "saving";
-  const respondentCompanyName = form.watch("respondentCompanyName");
-  const respondentAddress = form.watch("respondentAddress");
-  const respondentZipCode = form.watch("respondentZipCode");
-  const complainantName = form.watch("complainantName");
-  const factsDescription = form.watch("factsDescription");
-  const request = form.watch("request");
-
-  // Critério do botão: habilita apenas se os campos principais não estiverem vazios.
-  // (O schema pode validar mais coisas, mas isso não deve bloquear a UX deste formulário.)
-  const canSubmit =
-    respondentCompanyName.trim().length > 0 &&
-    respondentAddress.trim().length > 0 &&
-    respondentZipCode.trim().length > 0 &&
-    factsDescription.trim().length > 0 &&
-    request.trim().length > 0 &&
-    (isAnonymous ? true : (complainantName ?? "").trim().length > 0);
 
   const { execute, isExecuting } = useAction(createComplaint, {
     onSuccess: async (result) => {
@@ -194,8 +167,7 @@ export function RegistrarDenunciaForm() {
       setComplaintCode6(idPrefix);
 
       const snapshot = submitSnapshotRef.current;
-      const selectedEvidenceType =
-        snapshot?.evidenceType ?? ("none" as FormValues["evidenceType"]);
+      const selectedEvidenceType = snapshot?.evidenceType ?? "none";
       const snapshotDocFiles = snapshot?.docFiles ?? [];
       const snapshotMediaFiles = snapshot?.mediaFiles ?? [];
 
@@ -318,7 +290,7 @@ export function RegistrarDenunciaForm() {
     },
   });
 
-  const isSubmitDisabled = !canSubmit || isExecuting || isBusy;
+  const isSubmitDisabled = !isValid || isExecuting || isBusy;
 
   const onSubmit = (values: FormValues) => {
     if (isBusy) return;
@@ -335,8 +307,19 @@ export function RegistrarDenunciaForm() {
     setSavingTotal(0);
     setFlowOpen(true);
     setFlowStep("sending");
+
+    const evidenceTypeToSend =
+      values.evidenceType && values.evidenceType !== "none"
+        ? values.evidenceType
+        : undefined;
+
     execute({
       ...values,
+      // A API externa já define `evidenceType` como `none` por padrão.
+      // Portanto, nunca enviamos `evidenceType: "none"`.
+      evidenceType: evidenceTypeToSend,
+      // A API externa já define `filingDate` como `Date(now)` por padrão.
+      filingDate: undefined,
       // Alguns tipos do RHF deixam `complainantName` possivelmente undefined;
       // por segurança, garantimos sempre string para a validação do schema.
       complainantName: values.complainantName ?? "",
@@ -396,9 +379,6 @@ export function RegistrarDenunciaForm() {
         onSubmit={form.handleSubmit(onSubmit)}
         className="flex flex-col gap-6"
       >
-        {/* `filingDate` é obrigatório no schema, mas não temos input visível. */}
-        <input type="hidden" {...form.register("filingDate")} />
-
         {/* 1) Solicitação Anônima */}
         <div className="space-y-4">
           <div className="space-y-2">
@@ -445,10 +425,10 @@ export function RegistrarDenunciaForm() {
 
         {/* 2) Qualificação do denunciante (condicional) */}
         {!isAnonymous && (
-          <div className="space-y-4 rounded-xl border p-4">
+          <div className="space-y-4 rounded-xl border p-4 relative">
             <div>
               <h3 className="text-lg font-semibold">Denunciante</h3>
-              <p className="text-sm text-muted-foreground">Informe seus dados para que possamos contatar você caso necessário. Todos os seus dados são confidenciais e não serão compartilhados com terceiros.</p>
+              <p className="text-sm text-muted-foreground">Informe seus dados para que possamos contatar você caso necessário.</p>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
@@ -457,7 +437,7 @@ export function RegistrarDenunciaForm() {
                 name="complainantName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nome Completo</FormLabel>
+                    <FormLabel>Nome Completo <span className="text-red-500">*</span></FormLabel>
                     <FormControl>
                       <Input placeholder="Digite seu nome completo" {...field} />
                     </FormControl>
@@ -487,7 +467,7 @@ export function RegistrarDenunciaForm() {
                 name="complainantCpf"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>CPF</FormLabel>
+                    <FormLabel>CPF <span className="text-red-500">*</span></FormLabel>
                     <FormControl>
                       <Input
                         placeholder="000.000.000-00"
@@ -504,7 +484,7 @@ export function RegistrarDenunciaForm() {
                 name="complainantPhone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Telefone</FormLabel>
+                    <FormLabel>Telefone <span className="text-red-500">*</span></FormLabel>
                     <FormControl>
                       <Input
                         placeholder="(00) 00000-0000"
@@ -522,7 +502,7 @@ export function RegistrarDenunciaForm() {
                 name="complainantEmail"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>E-mail</FormLabel>
+                    <FormLabel>E-mail <span className="text-red-500">*</span></FormLabel>
                     <FormControl>
                       <Input
                         placeholder="seuemail@exemplo.com"
@@ -536,44 +516,44 @@ export function RegistrarDenunciaForm() {
               />
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="complainantZipCode"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>CEP</FormLabel>
-                    <FormControl>
-                      <Input placeholder="00000-000" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <FormField
+              control={form.control}
+              name="complainantZipCode"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>CEP</FormLabel>
+                  <FormControl>
+                    <Input placeholder="00000-000" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <FormField
-                control={form.control}
-                name="complainantAddress"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Endereço (rua/nº/bairro/cidade/Estado)</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Informe seu endereço completo"
-                        className="min-h-[90px]"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="complainantAddress"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Endereço (rua/nº/bairro/cidade/Estado)</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Informe seu endereço completo"
+                      className="min-h-[60px]"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <p className="text-xs text-red-500/80 text-center absolute top-4 right-4">Campos com * são obrigatórios</p>
           </div>
         )}
 
         {/* 3) Qualificação do denunciado (Fornecedor) */}
-        <div className="space-y-4 rounded-xl border p-4">
+        <div className="space-y-4 rounded-xl border p-4 relative">
           <div>
             <h3 className="text-lg font-semibold">Denunciado</h3>
             <p className="text-sm text-muted-foreground">Informe os dados da empresa ou prestador de serviço.</p>
@@ -585,7 +565,7 @@ export function RegistrarDenunciaForm() {
               name="respondentCompanyName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Razão Social / Nome Fantasia</FormLabel>
+                  <FormLabel>Razão Social / Nome Fantasia <span className="text-red-500">*</span></FormLabel>
                   <FormControl>
                     <Input placeholder="Informe o nome do fornecedor" {...field} />
                   </FormControl>
@@ -618,7 +598,7 @@ export function RegistrarDenunciaForm() {
                 <FormControl>
                   <Textarea
                     placeholder="Informe o endereço do fornecedor"
-                    className="min-h-[110px]"
+                    className="min-h-[60px]"
                     {...field}
                   />
                 </FormControl>
@@ -627,45 +607,31 @@ export function RegistrarDenunciaForm() {
             )}
           />
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <FormField
-              control={form.control}
-              name="respondentZipCode"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>CEP</FormLabel>
-                  <FormControl>
-                    <Input placeholder="00000-000" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <FormField
+            control={form.control}
+            name="respondentAdditionalInfo"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Informações Complementares</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Ex.: ponto de referência, inscrição estadual, etc."
+                    className="min-h-[60px]"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <FormField
-              control={form.control}
-              name="respondentAdditionalInfo"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Informações Complementares</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Ex.: ponto de referência, inscrição estadual, etc."
-                      className="min-h-[90px]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+          <p className="text-xs text-red-500/80 text-center absolute top-4 right-4">Campos com * são obrigatórios</p>
         </div>
 
         {/* 4) Relato dos fatos */}
-        <div className="space-y-4 rounded-xl border p-4">
+        <div className="space-y-4 rounded-xl border p-4 relative">
           <div>
-            <h3 className="text-lg font-semibold">Relato dos Fatos</h3>
+            <h3 className="text-lg font-semibold">Relato dos Fatos <span className="text-red-500">*</span></h3>
             <p className="text-sm text-muted-foreground">Descreva detalhadamente o fato/problema, incluindo dados do evento (data/hora ou período), produto/serviço, valor, forma de pagamento, local, nomes de pessoas envolvidas, respostas negativas ou falta de solução, e número de protocolos das tentativas.</p>
           </div>
 
@@ -686,12 +652,15 @@ export function RegistrarDenunciaForm() {
               </FormItem>
             )}
           />
+
+          <p className="text-xs text-red-500/80 text-center absolute top-4 right-4">Campo obrigatório!</p>
+
         </div>
 
         {/* 5) Do Pedido */}
-        <div className="space-y-4 rounded-xl border p-4">
+        <div className="space-y-4 rounded-xl border p-4 relative">
           <div>
-            <h3 className="text-lg font-semibold">Pedido</h3>
+            <h3 className="text-lg font-semibold">Pedido <span className="text-red-500">*</span></h3>
             <p className="text-sm text-muted-foreground">Informe o que você requer ao Procon Itumbiara em relação à denúncia.</p>
           </div>
 
@@ -712,6 +681,8 @@ export function RegistrarDenunciaForm() {
               </FormItem>
             )}
           />
+
+          <p className="text-xs text-red-500/80 text-center absolute top-4 right-4">Campo obrigatório!</p>
         </div>
 
         {/* 6) Meios de prova */}
@@ -728,7 +699,7 @@ export function RegistrarDenunciaForm() {
               <FormItem>
                 <FormControl>
                   <RadioGroup
-                    value={field.value}
+                    value={field.value ?? ""}
                     onValueChange={field.onChange}
                     className="flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap"
                   >
@@ -927,7 +898,7 @@ export function RegistrarDenunciaForm() {
                 Sua denúncia foi enviada com sucesso. O código da sua denúncia
                 é <span className="font-mono text-primary font-bold">#{complaintCode6}</span>, salve-o e caso queira, entre em
                 contato com o Procon Itumbiara e informe este código para ter notícias a
-                cerca da denúncia). <br /><br />
+                cerca da denúncia. <br /><br />
                 <a href="tel:+556434321215" className="flex items-center gap-2 no-underline"><Phone className="w-4 h-4" /> (64) 3432-1215</a>
                 <a href="mailto:procon@itumbiara.go.gov.br" className="flex items-center gap-2 no-underline mt-1"><Mail className="w-4 h-4" /> procon@itumbiara.go.gov.br</a>
               </DialogDescription>

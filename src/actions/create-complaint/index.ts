@@ -64,20 +64,26 @@ export const createComplaint = actionClient
           }),
 
       respondentCompanyName: parsedInput.respondentCompanyName,
+
       ...(parsedInput.respondentCnpj
         ? { respondentCnpj: parsedInput.respondentCnpj }
         : {}),
-      respondentAddress: parsedInput.respondentAddress,
-      respondentZipCode: parsedInput.respondentZipCode,
+      ...(parsedInput.respondentAddress
+        ? { respondentAddress: parsedInput.respondentAddress }
+        : {}),
       ...(parsedInput.respondentAdditionalInfo
         ? { respondentAdditionalInfo: parsedInput.respondentAdditionalInfo }
         : {}),
 
       factsDescription: parsedInput.factsDescription,
       request: parsedInput.request,
-      evidenceType: mapEvidenceTypeToExternal(parsedInput.evidenceType),
+      ...(parsedInput.evidenceType && parsedInput.evidenceType !== "none"
+        ? {
+            evidenceType: mapEvidenceTypeToExternal(parsedInput.evidenceType),
+          }
+        : {}),
 
-      filingDate: parsedInput.filingDate,
+      ...(parsedInput.filingDate ? { filingDate: parsedInput.filingDate } : {}),
     };
 
     const response = await fetch(endpoint, {

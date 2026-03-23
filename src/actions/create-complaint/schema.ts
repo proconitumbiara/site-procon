@@ -37,16 +37,15 @@ const optionalTrimmedString = z.preprocess(
   z.string().optional(),
 );
 
-const optionalDigitsString = z
-  .preprocess(digitsOnlyOrUndefined, z.string().optional());
-
-const standardizedNameSchema = z.preprocess(
-  (value) => {
-    if (typeof value !== "string") return "";
-    return standardizeFullName(value);
-  },
-  z.string(),
+const optionalDigitsString = z.preprocess(
+  digitsOnlyOrUndefined,
+  z.string().optional(),
 );
+
+const standardizedNameSchema = z.preprocess((value) => {
+  if (typeof value !== "string") return "";
+  return standardizeFullName(value);
+}, z.string());
 
 const cpfSchema = optionalDigitsString.refine(
   (value) => value == null || value.length === 11,
@@ -100,12 +99,8 @@ export const createComplaintSchema = z
       .trim()
       .min(1, "Razão Social/Nome Fantasia é obrigatório."),
     respondentCnpj: cnpjSchema.optional(),
-    // A rota externa exige `respondentAddress` e `respondentZipCode`.
-    respondentAddress: z
-      .string()
-      .trim()
-      .min(1, "Informe o endereço do fornecedor."),
-    respondentZipCode: requiredZipCodeSchema,
+    // A rota externa trata `respondentAddress` como opcional.
+    respondentAddress: optionalTrimmedString,
     respondentAdditionalInfo: optionalTrimmedString,
 
     // Seção 4 - Relato dos Fatos
@@ -115,31 +110,35 @@ export const createComplaintSchema = z
       .min(1, "O relato dos fatos é obrigatório."),
 
     // Seção 5 - Do Pedido
-    request: z
-      .string()
-      .trim()
-      .min(1, "O pedido é obrigatório."),
+    request: z.string().trim().min(1, "O pedido é obrigatório."),
 
     // Seção 6 - Meios de Prova
-    evidenceType: evidenceTypeEnum,
+    // Opcional: quando não enviar, a API define como `none`.
+    evidenceType: evidenceTypeEnum.optional(),
 
     // Metadados (conforme PDF)
+    // Opcional: quando não enviar, a API define como Date(now).
     filingDate: z
-      .string()
-      .trim()
-      .min(1, "Informe a data da solicitação.")
-      .refine(
-        (value) => /^\d{4}-\d{2}-\d{2}$/.test(value),
-        "filingDate deve estar no formato YYYY-MM-DD",
+      .preprocess(
+        emptyStringToUndefined,
+        z
+          .string()
+          .trim()
+          .min(1, "Informe a data da solicitação.")
+          .refine(
+            (value) => /^\d{4}-\d{2}-\d{2}$/.test(value),
+            "filingDate deve estar no formato YYYY-MM-DD",
+          )
+          .refine(
+            (value) => !Number.isNaN(Date.parse(value)),
+            "Informe uma data válida.",
+          ),
       )
-      .refine(
-        (value) => !Number.isNaN(Date.parse(value)),
-        "Informe uma data válida.",
-      ),
+      .optional(),
   })
   .superRefine((data, ctx) => {
     // Regras condicionais:
-    // - Se NÃO for anônimo, exigimos apenas o nome do denunciante.
+    // - Se NÃO for anônimo, exigimos os dados mínimos do denunciante.
     // - Se for anônimo, nenhum dado do denunciante é obrigatório.
     if (!data.isAnonymous) {
       if (!data.complainantName.trim().length) {
@@ -149,8 +148,33 @@ export const createComplaintSchema = z
           message: "Informe o nome do denunciante.",
         });
       }
+
+      // Observação: `cpfSchema`, `phoneSchema` e `complainantEmail` são opcionais
+      // por definição do schema. Aqui forçamos presença apenas quando `isAnonymous=false`.
+      if (!data.complainantCpf) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["complainantCpf"],
+          message: "Informe o CPF do denunciante.",
+        });
+      }
+
+      if (!data.complainantPhone) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["complainantPhone"],
+          message: "Informe o telefone do denunciante.",
+        });
+      }
+
+      if (!data.complainantEmail) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["complainantEmail"],
+          message: "Informe o e-mail do denunciante.",
+        });
+      }
     }
   });
 
 export type CreateComplaintInput = z.infer<typeof createComplaintSchema>;
-
