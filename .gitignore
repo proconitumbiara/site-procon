@@ -46,3 +46,5 @@ general.mdc
 docs/
 
 .uploads/
+
+.vscode/
