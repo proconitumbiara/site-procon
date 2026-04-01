@@ -2,6 +2,7 @@ import "../globals.css";
 
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
+import { Suspense } from "react";
 import { ThemeProvider } from "next-themes";
 
 import AccessibilityPanel from "@/components/website/global/AccessibilityPanel";
@@ -42,7 +43,9 @@ export default function WebsiteLayout({
           </a>
           {children}
           <Analytics />
-          <CookieConsent />
+          <Suspense fallback={null}>
+            <CookieConsent />
+          </Suspense>
           <AccessibilityPanel />
         </AccessibilityProvider>
       </ThemeProvider>
