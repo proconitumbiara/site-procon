@@ -5,6 +5,8 @@ import { Montserrat } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 
 import AccessibilityPanel from "@/components/website/global/AccessibilityPanel";
+import Analytics from "@/components/Analytics";
+import CookieConsent from "@/components/CookieConsent";
 import ForceLightTheme from "@/components/website/global/ForceLightTheme";
 import { AccessibilityProvider } from "@/lib/AccessibilityContext";
 
@@ -39,6 +41,8 @@ export default function WebsiteLayout({
             Pular para o conteúdo principal
           </a>
           {children}
+          <Analytics />
+          <CookieConsent />
           <AccessibilityPanel />
         </AccessibilityProvider>
       </ThemeProvider>

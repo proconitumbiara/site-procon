@@ -8,9 +8,7 @@ import LegalDialog from "./LegalDialog";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
-  const [openDialog, setOpenDialog] = useState<
-    "privacy" | "terms" | "accessibility" | null
-  >(null);
+  const [openDialog, setOpenDialog] = useState<"accessibility" | null>(null);
 
   const footerLinks = {
     institucional: [
@@ -22,13 +20,13 @@ export default function Footer() {
       { href: "/#cdc", label: "Código de Defesa do Consumidor" },
     ],
     legal: [
-      { type: "privacy" as const, label: "Política de Privacidade" },
-      { type: "terms" as const, label: "Termos de Uso" },
-      { type: "accessibility" as const, label: "Acessibilidade" },
+      { href: "/politica-de-privacidade", label: "Politica de Privacidade" },
+      { href: "/termos-de-uso", label: "Termos de Uso" },
+      { href: "/cookies", label: "Politica de Cookies" },
     ],
   };
 
-  const handleOpenDialog = (type: "privacy" | "terms" | "accessibility") => {
+  const handleOpenDialog = (type: "accessibility") => {
     setOpenDialog(type);
   };
 
@@ -90,16 +88,24 @@ export default function Footer() {
             <nav aria-label="Links legais">
               <ul className="space-y-2">
                 {footerLinks.legal.map((link) => (
-                  <li key={link.type}>
-                    <button
-                      type="button"
-                      onClick={() => handleOpenDialog(link.type)}
-                      className="text-muted-foreground hover:text-foreground cursor-pointer rounded-sm text-left text-sm no-underline transition-colors"
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="text-muted-foreground hover:text-foreground rounded-sm text-sm no-underline transition-colors"
                     >
                       {link.label}
-                    </button>
+                    </Link>
                   </li>
                 ))}
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenDialog("accessibility")}
+                    className="text-muted-foreground hover:text-foreground cursor-pointer rounded-sm text-left text-sm no-underline transition-colors"
+                  >
+                    Acessibilidade
+                  </button>
+                </li>
               </ul>
             </nav>
           </div>
