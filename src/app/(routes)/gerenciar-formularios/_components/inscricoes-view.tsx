@@ -150,16 +150,17 @@ export default function InscricoesView({
             {filteredRegistrations.length === 1 ? "ão" : "ões"} encontrada
             {filteredRegistrations.length === 1 ? "" : "s"}
             {schoolFilter !== "all" ||
-            ageRangeFilter !== "all" ||
-            categoryFilter !== "all"
+              ageRangeFilter !== "all" ||
+              categoryFilter !== "all"
               ? " (com filtros)"
               : ""}
           </p>
           <Tabs
             value={viewMode}
             onValueChange={(v) => setViewMode(v as "cards" | "table")}
+            className="bg-card"
           >
-            <TabsList>
+            <TabsList className="bg-card">
               <TabsTrigger value="cards">Cards</TabsTrigger>
               <TabsTrigger value="table">Tabela</TabsTrigger>
             </TabsList>
