@@ -88,7 +88,7 @@ export default async function FormPage({ params }: FormPageProps) {
         </section>
         <section className="min-h-0 flex-1">
           <h2 className="mb-3 text-lg font-semibold">Inscrições</h2>
-          <InscricoesView registrations={registrations} />
+          <InscricoesView formId={id} registrations={registrations} />
         </section>
       </PageContent>
     </PageContainer>

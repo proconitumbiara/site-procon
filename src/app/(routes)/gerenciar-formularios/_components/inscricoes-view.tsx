@@ -20,6 +20,7 @@ import InscricoesCards from "./inscricoes-cards";
 import InscricoesTable from "./inscricoes-table";
 
 interface InscricoesViewProps {
+  formId: string;
   registrations: RegistrationWithGuardian[];
 }
 
@@ -36,6 +37,7 @@ function matchesAgeRange(age: number, range: AgeRangeValue): boolean {
 }
 
 export default function InscricoesView({
+  formId,
   registrations,
 }: InscricoesViewProps) {
   const router = useRouter();
@@ -43,6 +45,8 @@ export default function InscricoesView({
   const [ageRangeFilter, setAgeRangeFilter] = useState<AgeRangeValue>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+  const [isExportingSchoolPdf, setIsExportingSchoolPdf] = useState(false);
+  const [isExportingGeneralPdf, setIsExportingGeneralPdf] = useState(false);
 
   const onGuardianAdded = () => router.refresh();
 
@@ -64,6 +68,42 @@ export default function InscricoesView({
       return true;
     });
   }, [registrations, schoolFilter, ageRangeFilter, categoryFilter]);
+
+  const triggerPdfDownload = (url: string) => {
+    const link = document.createElement("a");
+    link.href = url;
+    link.rel = "noopener noreferrer";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  };
+
+  const handleExportSchoolPdf = () => {
+    if (schoolFilter === "all") {
+      return;
+    }
+
+    setIsExportingSchoolPdf(true);
+    try {
+      const params = new URLSearchParams({
+        mode: "school",
+        school: schoolFilter,
+      });
+      triggerPdfDownload(`/api/forms/${formId}/registrations-pdf?${params.toString()}`);
+    } finally {
+      setTimeout(() => setIsExportingSchoolPdf(false), 600);
+    }
+  };
+
+  const handleExportGeneralPdf = () => {
+    setIsExportingGeneralPdf(true);
+    try {
+      const params = new URLSearchParams({ mode: "general" });
+      triggerPdfDownload(`/api/forms/${formId}/registrations-pdf?${params.toString()}`);
+    } finally {
+      setTimeout(() => setIsExportingGeneralPdf(false), 600);
+    }
+  };
 
   return (
     <div className="space-y-4 overflow-visible">
@@ -141,6 +181,26 @@ export default function InscricoesView({
             }}
           >
             Limpar filtros
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleExportSchoolPdf}
+            disabled={schoolFilter === "all" || isExportingSchoolPdf}
+          >
+            {isExportingSchoolPdf
+              ? "Exportando..."
+              : "Exportar Selecionado"}
+          </Button>
+          <Button
+            variant="default"
+            size="sm"
+            onClick={handleExportGeneralPdf}
+            disabled={isExportingGeneralPdf}
+          >
+            {isExportingGeneralPdf
+              ? "Exportando..."
+              : "Exportar todos"}
           </Button>
         </div>
 
