@@ -308,12 +308,18 @@ export default async function Home() {
           title="Entre em Contato"
           description="Estamos à disposição para ajudar você"
         >
-          <div className="mt-8 grid w-full grid-cols-1 gap-6 sm:grid-cols-2">
+          <div className="mt-8 grid w-full grid-cols-1 gap-6 sm:grid-cols-3">
             <ContactCard
               type="phone"
               label="Telefone"
               value="(64) 3432-1215"
               href="tel:+556434321215"
+            />
+            <ContactCard
+              type="mail"
+              label="E-mail"
+              value="procon@itumbiara.go.gov.br"
+              href="mailto:procon@itumbiara.go.gov.br"
             />
             <ContactCard
               type="instagram"

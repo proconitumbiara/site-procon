@@ -1,9 +1,9 @@
-import { ExternalLink, Instagram, Phone } from "lucide-react";
+import { ExternalLink, Instagram, Mail, Phone } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
 interface ContactCardProps {
-  type: "phone" | "instagram";
+  type: "phone" | "instagram" | "mail";
   label: string;
   value: string;
   href: string;
@@ -15,7 +15,7 @@ export default function ContactCard({
   value,
   href,
 }: ContactCardProps) {
-  const Icon = type === "phone" ? Phone : Instagram;
+  const Icon = type === "phone" ? Phone : type === "instagram" ? Instagram : Mail;
 
   return (
     <div className="bg-card border-border group hover:border-primary relative flex h-full flex-col overflow-hidden rounded-lg border p-6 transition-all duration-300 hover:shadow-lg">
@@ -45,7 +45,7 @@ export default function ContactCard({
                 Ligar
                 <Phone className="h-4 w-4" aria-hidden="true" />
               </a>
-            ) : (
+            ) : type === "instagram" ? (
               <a
                 href={href}
                 target="_blank"
@@ -59,7 +59,16 @@ export default function ContactCard({
                   aria-hidden="true"
                 />
               </a>
-            )}
+            ) : type === "mail" ? (
+              <a
+                href={href}
+                className="inline-flex items-center gap-2 no-underline"
+                aria-label={`Enviar e-mail para ${value}`}
+              >
+                Enviar
+                <Mail className="h-4 w-4" aria-hidden="true" />
+              </a>
+            ) : null}
           </Button>
         </div>
       </div>
