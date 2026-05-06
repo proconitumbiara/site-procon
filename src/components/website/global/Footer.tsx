@@ -53,9 +53,10 @@ export default function Footer() {
                 Consumidor
               </p>
               <p>CNPJ: 08.242.183/0001-63</p>
-              <p>Endereço: Av. Porto Nacional, 495</p>
-              <p>CEP: 75528-122</p>
+              <p>Endereço: Av. Porto Nacional, 495 - CEP: 75528-122</p>
+              <p></p>
               <p>Horário de Atendimento: Segunda a Sexta, 7h às 13h</p>
+              <p>Abertura de reclamações: Segunda a Sexta, 7h às 12h</p>
             </div>
           </div>
 
