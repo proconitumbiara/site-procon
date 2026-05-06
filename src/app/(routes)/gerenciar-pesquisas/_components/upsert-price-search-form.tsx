@@ -322,7 +322,7 @@ const UpsertPriceSearchForm = ({
 
   return (
     <>
-      <DialogContent className="flex h-[95vh] w-[95vw] max-w-[95vw] flex-col p-0 md:w-[98vw] md:max-w-[98vw] lg:w-[80] lg:max-w-[80]">
+      <DialogContent className="flex sm:h-[95vh] w-full sm:max-w-[95vw] flex-col p-0">
         <div className="border-b px-6 pt-6 pb-4">
           <DialogTitle>
             {priceSearch ? "Editar pesquisa" : "Nova pesquisa"}
@@ -907,7 +907,7 @@ const UpsertPriceSearchForm = ({
                                     </div>
                                     <div className="max-h-[240px] overflow-y-auto">
                                       {Object.keys(limitedProducts).length ===
-                                      0 ? (
+                                        0 ? (
                                         <div className="text-muted-foreground px-2 py-6 text-center text-sm">
                                           Nenhum produto encontrado
                                         </div>
