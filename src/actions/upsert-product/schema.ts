@@ -18,6 +18,7 @@ export const upsertProductSchema = z.object({
     .trim()
     .min(1, { message: "O nome do produto é obrigatório." }),
   categoryId: z.string().uuid({ message: "Categoria inválida." }),
+  isActive: z.boolean().optional(),
 });
 
 export type UpsertProductInput = z.infer<typeof upsertProductSchema>;

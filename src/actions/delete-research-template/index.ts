@@ -5,14 +5,14 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 
 import { db } from "@/db";
-import { productsTable } from "@/db/schema";
+import { researchTemplatesTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { actionClient } from "@/lib/next-safe-action";
 
-import { deleteProductSchema } from "./schema";
+import { deleteResearchTemplateSchema } from "./schema";
 
-export const deleteProduct = actionClient
-  .schema(deleteProductSchema)
+export const deleteResearchTemplate = actionClient
+  .schema(deleteResearchTemplateSchema)
   .action(async ({ parsedInput }) => {
     const session = await auth.api.getSession({
       headers: await headers(),
@@ -22,27 +22,28 @@ export const deleteProduct = actionClient
       throw new Error("Unauthorized");
     }
 
-    const product = await db.query.productsTable.findFirst({
-      where: eq(productsTable.id, parsedInput.id),
+    const template = await db.query.researchTemplatesTable.findFirst({
+      where: eq(researchTemplatesTable.id, parsedInput.id),
     });
 
-    if (!product) {
-      throw new Error("Produto não encontrado");
+    if (!template) {
+      throw new Error("Template não encontrado");
     }
 
-    if (!product.isActive) {
-      throw new Error("Produto já está inativo");
+    if (!template.isActive) {
+      throw new Error("Template já está inativo");
     }
 
     await db
-      .update(productsTable)
+      .update(researchTemplatesTable)
       .set({
         isActive: false,
         updatedAt: new Date(),
       })
-      .where(eq(productsTable.id, parsedInput.id));
+      .where(eq(researchTemplatesTable.id, parsedInput.id));
 
     revalidatePath("/gerenciar-pesquisas");
+    revalidatePath("/gerenciar-pesquisas/templates");
 
     return { success: true };
   });

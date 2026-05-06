@@ -29,6 +29,7 @@ const UpsertSupplierForm = ({
   const [name, setName] = useState(supplier?.name ?? "");
   const [phone, setPhone] = useState(supplier?.phone ?? "");
   const [address, setAddress] = useState(supplier?.address ?? "");
+  const [isActive, setIsActive] = useState(supplier?.isActive ?? true);
 
   const { execute, status } = useAction(upsertSupplier, {
     onSuccess: (result) => {
@@ -59,6 +60,7 @@ const UpsertSupplierForm = ({
       name: name.trim(),
       phone: phone.trim() || undefined,
       address: address.trim() || undefined,
+      isActive,
     });
   };
 
@@ -102,6 +104,20 @@ const UpsertSupplierForm = ({
             placeholder="Endereço completo"
             rows={3}
           />
+        </div>
+        <div>
+          <label className="text-sm font-medium">Fornecedor ativo</label>
+          <div className="border-input bg-background mt-1 flex h-10 items-center gap-2 rounded-md border px-3">
+            <input
+              type="checkbox"
+              className="h-4 w-4"
+              checked={isActive}
+              onChange={(event) => setIsActive(event.target.checked)}
+            />
+            <span className="text-muted-foreground text-sm">
+              Desmarque para inativar sem remover histórico
+            </span>
+          </div>
         </div>
       </div>
       <DialogFooter>

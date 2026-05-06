@@ -40,7 +40,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { categoriesTable, productsTable, suppliersTable } from "@/db/schema";
+import {
+  categoriesTable,
+  productsTable,
+  researchTemplatesTable,
+  suppliersTable,
+} from "@/db/schema";
 import { centavosToReaisNumber, reaisToCentavos } from "@/lib/formatters";
 import { PriceSearchWithRelations } from "@/types/content-management";
 
@@ -49,12 +54,21 @@ type Category = typeof categoriesTable.$inferSelect;
 type Product = typeof productsTable.$inferSelect & {
   category: Category;
 };
+type ResearchTemplate = typeof researchTemplatesTable.$inferSelect & {
+  items: Array<{
+    productId: string;
+    supplierId: string;
+    product: typeof productsTable.$inferSelect;
+    supplier: typeof suppliersTable.$inferSelect;
+  }>;
+};
 
 interface UpsertPriceSearchFormProps {
   priceSearch?: PriceSearchWithRelations;
   suppliers: Supplier[];
   categories: Category[];
   products: Product[];
+  templates: ResearchTemplate[];
   onSuccess?: () => void;
 }
 
@@ -122,6 +136,7 @@ const UpsertPriceSearchForm = ({
   suppliers: initialSuppliers,
   categories: initialCategories,
   products: initialProducts,
+  templates,
   onSuccess,
 }: UpsertPriceSearchFormProps) => {
   const [supplierDialogOpen, setSupplierDialogOpen] = useState(false);
@@ -150,6 +165,7 @@ const UpsertPriceSearchForm = ({
   const [supplierSearchTerms, setSupplierSearchTerms] = useState<
     Record<number, string>
   >({});
+  const [selectedTemplateId, setSelectedTemplateId] = useState("");
   const productSearchInputRefs = useRef<
     Record<number, HTMLInputElement | null>
   >({});
@@ -173,6 +189,50 @@ const UpsertPriceSearchForm = ({
     control: form.control,
     name: "items",
   });
+
+  const loadTemplateItems = () => {
+    if (!selectedTemplateId) {
+      toast.error("Selecione um template para carregar.");
+      return;
+    }
+
+    const template = templates.find((item) => item.id === selectedTemplateId);
+    if (!template) {
+      toast.error("Template não encontrado.");
+      return;
+    }
+
+    if (!template.items.length) {
+      toast.error(
+        "Este template não possui itens cadastrados. Edite o template antes de usar.",
+      );
+      return;
+    }
+
+    const invalidItem = template.items.find(
+      (item) => !item.product.isActive || !item.supplier.isActive,
+    );
+    if (invalidItem) {
+      toast.error(
+        "Este template possui produto ou fornecedor inativo. Atualize o template antes de usar.",
+      );
+      return;
+    }
+
+    form.setValue(
+      "items",
+      template.items.map((item) => ({
+        productId: item.productId,
+        supplierId: item.supplierId,
+        price: "",
+      })),
+      { shouldDirty: true, shouldValidate: true },
+    );
+
+    setProductSearchTerms({});
+    setSupplierSearchTerms({});
+    toast.success("Itens do template carregados com sucesso.");
+  };
 
   const { execute, status } = useAction(upsertPriceSearch, {
     onSuccess: (result) => {
@@ -510,6 +570,29 @@ const UpsertPriceSearchForm = ({
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <h3 className="text-lg font-semibold">Itens da pesquisa</h3>
                   <div className="flex flex-wrap items-center gap-2">
+                    <Select
+                      value={selectedTemplateId}
+                      onValueChange={setSelectedTemplateId}
+                    >
+                      <SelectTrigger className="w-[260px]">
+                        <SelectValue placeholder="Selecionar template" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {templates.map((template) => (
+                          <SelectItem key={template.id} value={template.id}>
+                            {template.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={loadTemplateItems}
+                    >
+                      Carregar template
+                    </Button>
                     <Button
                       type="button"
                       variant="secondary"

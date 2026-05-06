@@ -8,39 +8,25 @@ import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import {
   categoriesTable,
   productsTable,
-  researchTemplatesTable,
   suppliersTable,
 } from "@/db/schema";
 
-import UpsertPriceSearchForm from "./upsert-price-search-form";
+import UpsertResearchTemplateForm from "./upsert-research-template-form";
 
 type Supplier = typeof suppliersTable.$inferSelect;
-type Category = typeof categoriesTable.$inferSelect;
 type Product = typeof productsTable.$inferSelect & {
-  category: Category;
-};
-type Template = typeof researchTemplatesTable.$inferSelect & {
-  items: Array<{
-    productId: string;
-    supplierId: string;
-    product: typeof productsTable.$inferSelect;
-    supplier: typeof suppliersTable.$inferSelect;
-  }>;
+  category: typeof categoriesTable.$inferSelect;
 };
 
-interface AddPriceSearchButtonProps {
+interface AddResearchTemplateButtonProps {
   suppliers: Supplier[];
-  categories: Category[];
   products: Product[];
-  templates: Template[];
 }
 
-const AddPriceSearchButton = ({
+const AddResearchTemplateButton = ({
   suppliers,
-  categories,
   products,
-  templates,
-}: AddPriceSearchButtonProps) => {
+}: AddResearchTemplateButtonProps) => {
   const [open, setOpen] = useState(false);
 
   return (
@@ -48,20 +34,16 @@ const AddPriceSearchButton = ({
       <DialogTrigger asChild>
         <Button>
           <Plus className="h-4 w-4" />
-          Nova pesquisa
+          Novo template
         </Button>
       </DialogTrigger>
-      <UpsertPriceSearchForm
+      <UpsertResearchTemplateForm
         suppliers={suppliers}
-        categories={categories}
         products={products}
-        templates={templates}
         onSuccess={() => setOpen(false)}
       />
     </Dialog>
   );
 };
 
-export default AddPriceSearchButton;
-
-
+export default AddResearchTemplateButton;

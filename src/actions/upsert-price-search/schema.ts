@@ -45,6 +45,22 @@ export const upsertPriceSearchSchema = z.object({
   items: z
     .array(itemSchema)
     .min(1, { message: "Inclua ao menos um item na pesquisa." }),
+}).superRefine((data, ctx) => {
+  const seen = new Set<string>();
+
+  data.items.forEach((item, index) => {
+    const key = `${item.productId}:${item.supplierId}`;
+    if (seen.has(key)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["items", index, "productId"],
+        message:
+          "Combinação de produto e fornecedor duplicada na mesma pesquisa.",
+      });
+    } else {
+      seen.add(key);
+    }
+  });
 });
 
 export type UpsertPriceSearchInput = z.infer<typeof upsertPriceSearchSchema>;

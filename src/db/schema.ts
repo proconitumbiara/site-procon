@@ -6,6 +6,7 @@ import {
   pgTable,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 
@@ -137,6 +138,7 @@ export const suppliersTable = pgTable("suppliers", {
   name: text("name").notNull(),
   address: text("address"),
   phone: text("phone"),
+  isActive: boolean("is_active").notNull().default(true),
   createdAT: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
@@ -160,11 +162,52 @@ export const productsTable = pgTable("products", {
   categoryId: uuid("category_id")
     .notNull()
     .references(() => categoriesTable.id, { onDelete: "cascade" }),
+  isActive: boolean("is_active").notNull().default(true),
   createdAT: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
     .$onUpdate(() => new Date()),
 });
+
+//Tabela para armazenar templates de pesquisa
+export const researchTemplatesTable = pgTable("research_templates", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  description: text("description"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAT: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+//Tabela intermediária de itens de template de pesquisa
+export const researchTemplateItemsTable = pgTable(
+  "research_template_items",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    templateId: uuid("template_id")
+      .notNull()
+      .references(() => researchTemplatesTable.id, { onDelete: "cascade" }),
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => productsTable.id, { onDelete: "cascade" }),
+    supplierId: uuid("supplier_id")
+      .notNull()
+      .references(() => suppliersTable.id, { onDelete: "cascade" }),
+    sortOrder: integer("sort_order").notNull().default(0),
+    createdAT: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => ({
+    uniqueTemplateProductSupplier: uniqueIndex(
+      "research_template_items_template_product_supplier_idx",
+    ).on(table.templateId, table.productId, table.supplierId),
+  }),
+);
 
 //Tabela intermediária para relacionar pesquisa, produto, fornecedor e preço
 export const priceSearchItemsTable = pgTable("price_search_items", {
@@ -303,12 +346,41 @@ export const productsRelations = relations(productsTable, ({ one, many }) => ({
     references: [categoriesTable.id],
   }),
   priceSearchItems: many(priceSearchItemsTable),
+  researchTemplateItems: many(researchTemplateItemsTable),
 }));
 
 //Suppliers relationships
 export const suppliersRelations = relations(suppliersTable, ({ many }) => ({
   priceSearchItems: many(priceSearchItemsTable),
+  researchTemplateItems: many(researchTemplateItemsTable),
 }));
+
+//Research templates relationships
+export const researchTemplatesRelations = relations(
+  researchTemplatesTable,
+  ({ many }) => ({
+    items: many(researchTemplateItemsTable),
+  }),
+);
+
+//Research template items relationships
+export const researchTemplateItemsRelations = relations(
+  researchTemplateItemsTable,
+  ({ one }) => ({
+    template: one(researchTemplatesTable, {
+      fields: [researchTemplateItemsTable.templateId],
+      references: [researchTemplatesTable.id],
+    }),
+    product: one(productsTable, {
+      fields: [researchTemplateItemsTable.productId],
+      references: [productsTable.id],
+    }),
+    supplier: one(suppliersTable, {
+      fields: [researchTemplateItemsTable.supplierId],
+      references: [suppliersTable.id],
+    }),
+  }),
+);
 
 //Price search items relationships
 export const priceSearchItemsRelations = relations(

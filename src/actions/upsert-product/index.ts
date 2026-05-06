@@ -32,12 +32,14 @@ export const upsertProduct = actionClient
         id: parsedInput.id,
         name: parsedInput.name.trim(),
         categoryId: parsedInput.categoryId,
+        isActive: parsedInput.isActive ?? true,
       })
       .onConflictDoUpdate({
         target: [productsTable.id],
         set: {
           name: parsedInput.name.trim(),
           categoryId: parsedInput.categoryId,
+          isActive: parsedInput.isActive ?? true,
           updatedAt: new Date(),
         },
       })
@@ -45,6 +47,7 @@ export const upsertProduct = actionClient
         id: productsTable.id,
         name: productsTable.name,
         categoryId: productsTable.categoryId,
+        isActive: productsTable.isActive,
       });
 
     revalidatePath("/gerenciar-pesquisas");

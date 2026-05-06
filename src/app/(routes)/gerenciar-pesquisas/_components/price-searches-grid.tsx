@@ -29,12 +29,14 @@ import UpsertPriceSearchForm from "./upsert-price-search-form";
 type Supplier = Parameters<typeof UpsertPriceSearchForm>[0]["suppliers"];
 type Category = Parameters<typeof UpsertPriceSearchForm>[0]["categories"];
 type Product = Parameters<typeof UpsertPriceSearchForm>[0]["products"];
+type Template = Parameters<typeof UpsertPriceSearchForm>[0]["templates"];
 
 interface PriceSearchesGridProps {
   priceSearches: PriceSearchWithRelations[];
   suppliers: Supplier;
   categories: Category;
   products: Product;
+  templates: Template;
 }
 
 const PriceSearchesGrid = ({
@@ -42,6 +44,7 @@ const PriceSearchesGrid = ({
   suppliers,
   categories,
   products,
+  templates,
 }: PriceSearchesGridProps) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
@@ -128,6 +131,7 @@ const PriceSearchesGrid = ({
                     suppliers={suppliers}
                     categories={categories}
                     products={products}
+                    templates={templates}
                     onSuccess={() => setEditingId(null)}
                   />
                 </Dialog>

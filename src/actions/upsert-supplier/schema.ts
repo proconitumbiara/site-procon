@@ -19,6 +19,7 @@ export const upsertSupplierSchema = z.object({
     .min(1, { message: "O nome do fornecedor é obrigatório." }),
   address: z.string().trim().optional(),
   phone: z.string().trim().optional(),
+  isActive: z.boolean().optional(),
 });
 
 export type UpsertSupplierInput = z.infer<typeof upsertSupplierSchema>;

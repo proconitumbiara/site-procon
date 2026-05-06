@@ -48,6 +48,7 @@ export const upsertSupplier = actionClient
         phone: normalizeNullableString(
           formatPhone(normalizePhone(parsedInput.phone)),
         ),
+        isActive: parsedInput.isActive ?? true,
       })
       .onConflictDoUpdate({
         target: [suppliersTable.id],
@@ -59,6 +60,7 @@ export const upsertSupplier = actionClient
           phone: normalizeNullableString(
             formatPhone(normalizePhone(parsedInput.phone)),
           ),
+          isActive: parsedInput.isActive ?? true,
           updatedAt: new Date(),
         },
       })
@@ -67,6 +69,7 @@ export const upsertSupplier = actionClient
         name: suppliersTable.name,
         address: suppliersTable.address,
         phone: suppliersTable.phone,
+        isActive: suppliersTable.isActive,
       });
 
     revalidatePath(`/gerenciar-fornecedores`);

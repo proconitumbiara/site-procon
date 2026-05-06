@@ -5,7 +5,6 @@ import { Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import { deleteProduct } from "@/actions/delete-product";
-import { upsertProduct } from "@/actions/upsert-product";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,6 +17,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -52,6 +52,16 @@ export const productsTableColumns = (
     cell: ({ row }) => row.original.category.name,
   },
   {
+    id: "status",
+    header: "Status",
+    cell: ({ row }) =>
+      row.original.isActive ? (
+        <Badge variant="secondary">Ativo</Badge>
+      ) : (
+        <Badge variant="outline">Inativo</Badge>
+      ),
+  },
+  {
     id: "actions",
     header: "Ações",
     cell: ({ row }) => {
@@ -74,7 +84,7 @@ function ProductActions({
     deleteProduct,
     {
       onSuccess: () => {
-        toast.success("Produto deletado com sucesso!");
+        toast.success("Produto inativado com sucesso!");
         window.location.reload();
       },
       onError: (error) => {
@@ -115,11 +125,11 @@ function ProductActions({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Tem certeza que deseja deletar este produto?
+              Tem certeza que deseja inativar este produto?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Essa ação não pode ser desfeita. Todos os dados relacionados a
-              este produto serão perdidos permanentemente.
+              O produto será ocultado de novos cadastros, mas o histórico das
+              pesquisas será preservado.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -128,7 +138,7 @@ function ProductActions({
               onClick={() => deleteProductAction({ id: product.id })}
               disabled={deleteStatus === "executing"}
             >
-              {deleteStatus === "executing" ? "Deletando..." : "Deletar"}
+              {deleteStatus === "executing" ? "Inativando..." : "Inativar"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

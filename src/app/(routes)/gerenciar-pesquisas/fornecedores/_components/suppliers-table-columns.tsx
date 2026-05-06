@@ -16,6 +16,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -52,6 +53,16 @@ export const suppliersTableColumns = (): ColumnDef<Supplier>[] => [
     cell: ({ row }) => row.original.address ?? "-",
   },
   {
+    id: "status",
+    header: "Status",
+    cell: ({ row }) =>
+      row.original.isActive ? (
+        <Badge variant="secondary">Ativo</Badge>
+      ) : (
+        <Badge variant="outline">Inativo</Badge>
+      ),
+  },
+  {
     id: "actions",
     header: "Ações",
     cell: ({ row }) => {
@@ -68,7 +79,7 @@ function SupplierActions({ supplier }: { supplier: Supplier }) {
     deleteSupplier,
     {
       onSuccess: () => {
-        toast.success("Fornecedor deletado com sucesso!");
+        toast.success("Fornecedor inativado com sucesso!");
         window.location.reload();
       },
       onError: (error) => {
@@ -105,11 +116,11 @@ function SupplierActions({ supplier }: { supplier: Supplier }) {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Tem certeza que deseja deletar este fornecedor?
+              Tem certeza que deseja inativar este fornecedor?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Essa ação não pode ser desfeita. Todos os dados relacionados a
-              este fornecedor serão perdidos permanentemente.
+              O fornecedor será ocultado de novos cadastros, mas o histórico
+              das pesquisas será preservado.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -118,7 +129,7 @@ function SupplierActions({ supplier }: { supplier: Supplier }) {
               onClick={() => deleteSupplierAction({ id: supplier.id })}
               disabled={deleteStatus === "executing"}
             >
-              {deleteStatus === "executing" ? "Deletando..." : "Deletar"}
+              {deleteStatus === "executing" ? "Inativando..." : "Inativar"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

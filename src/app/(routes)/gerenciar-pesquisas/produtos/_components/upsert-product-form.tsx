@@ -41,6 +41,7 @@ const UpsertProductForm = ({
 }: UpsertProductFormProps) => {
   const [name, setName] = useState(product?.name ?? "");
   const [categoryId, setCategoryId] = useState(product?.categoryId ?? "");
+  const [isActive, setIsActive] = useState(product?.isActive ?? true);
   const [categories, setCategories] = useState(initialCategories);
   const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
@@ -103,6 +104,7 @@ const UpsertProductForm = ({
       id: product?.id,
       name: name.trim(),
       categoryId,
+      isActive,
     });
   };
 
@@ -200,6 +202,20 @@ const UpsertProductForm = ({
                   </Button>
                 </div>
               )}
+            </div>
+          </div>
+          <div>
+            <label className="text-sm font-medium">Produto ativo</label>
+            <div className="border-input bg-background mt-1 flex h-10 items-center gap-2 rounded-md border px-3">
+              <input
+                type="checkbox"
+                className="h-4 w-4"
+                checked={isActive}
+                onChange={(event) => setIsActive(event.target.checked)}
+              />
+              <span className="text-muted-foreground text-sm">
+                Desmarque para inativar sem remover histórico
+              </span>
             </div>
           </div>
         </div>

@@ -1,11 +1,16 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 
 import { db } from "@/db";
-import { priceSearchesTable, priceSearchItemsTable } from "@/db/schema";
+import {
+  priceSearchesTable,
+  priceSearchItemsTable,
+  productsTable,
+  suppliersTable,
+} from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { actionClient } from "@/lib/next-safe-action";
 
@@ -31,6 +36,38 @@ export const upsertPriceSearch = actionClient
           message: ErrorMessages[ErrorTypes.UNAUTHENTICATED],
         },
       };
+    }
+
+    const productIds = [...new Set(parsedInput.items.map((item) => item.productId))];
+    const supplierIds = [
+      ...new Set(parsedInput.items.map((item) => item.supplierId)),
+    ];
+
+    const [activeProducts, activeSuppliers] = await Promise.all([
+      db.query.productsTable.findMany({
+        where: and(
+          inArray(productsTable.id, productIds),
+          eq(productsTable.isActive, true),
+        ),
+      }),
+      db.query.suppliersTable.findMany({
+        where: and(
+          inArray(suppliersTable.id, supplierIds),
+          eq(suppliersTable.isActive, true),
+        ),
+      }),
+    ]);
+
+    if (activeProducts.length !== productIds.length) {
+      throw new Error(
+        "Há produtos inativos ou inexistentes nos itens da pesquisa.",
+      );
+    }
+
+    if (activeSuppliers.length !== supplierIds.length) {
+      throw new Error(
+        "Há fornecedores inativos ou inexistentes nos itens da pesquisa.",
+      );
     }
 
     await db.transaction(async (tx) => {

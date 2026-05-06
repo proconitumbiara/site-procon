@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 
 import { db } from "@/db";
-import { priceSearchItemsTable, suppliersTable } from "@/db/schema";
+import { suppliersTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { actionClient } from "@/lib/next-safe-action";
 
@@ -30,19 +30,16 @@ export const deleteSupplier = actionClient
       throw new Error("Fornecedor não encontrado");
     }
 
-    // Verificar se há itens de pesquisa vinculados
-    const itemsCount = await db.query.priceSearchItemsTable.findMany({
-      where: eq(priceSearchItemsTable.supplierId, parsedInput.id),
-    });
-
-    if (itemsCount.length > 0) {
-      throw new Error(
-        `Não é possível deletar o fornecedor. Existem ${itemsCount.length} item(ns) de pesquisa vinculado(s).`,
-      );
+    if (!supplier.isActive) {
+      throw new Error("Fornecedor já está inativo");
     }
 
     await db
-      .delete(suppliersTable)
+      .update(suppliersTable)
+      .set({
+        isActive: false,
+        updatedAt: new Date(),
+      })
       .where(eq(suppliersTable.id, parsedInput.id));
 
     revalidatePath("/gerenciar-pesquisas");
