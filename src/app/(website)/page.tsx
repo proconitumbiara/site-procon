@@ -331,7 +331,7 @@ export default async function Home() {
         </Section>
 
         {/* Endereço */}
-        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-0">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-0 mb-10">
           <Location />
         </div>
       </main>
