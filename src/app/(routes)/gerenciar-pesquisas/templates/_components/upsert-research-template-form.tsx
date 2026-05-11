@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { useAction } from "next-safe-action/hooks";
 import { useFieldArray, useForm } from "react-hook-form";
+import { useRef } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -107,6 +108,7 @@ const UpsertResearchTemplateForm = ({
     control: form.control,
     name: "items",
   });
+  const itemsListRef = useRef<HTMLDivElement>(null);
 
   const { execute, status } = useAction(upsertResearchTemplate, {
     onSuccess: (result) => {
@@ -155,8 +157,22 @@ const UpsertResearchTemplateForm = ({
     });
   };
 
+  const handleAddItem = () => {
+    append(createEmptyItem(activeProducts[0]?.id, activeSuppliers[0]?.id));
+
+    requestAnimationFrame(() => {
+      const itemsList = itemsListRef.current;
+      if (!itemsList) return;
+
+      itemsList.scrollTo({
+        top: itemsList.scrollHeight,
+        behavior: "smooth",
+      });
+    });
+  };
+
   return (
-    <DialogContent className="flex h-[95vh] w-[95vw] max-w-[95vw] flex-col p-0 lg:w-[60vw] lg:max-w-[60vw]">
+    <DialogContent className="flex sm:h-[95vh] w-full sm:max-w-[95vw] flex-col p-0">
       <div className="border-b px-6 pt-6 pb-4">
         <DialogTitle>
           {template ? "Editar template de pesquisa" : "Novo template de pesquisa"}
@@ -167,7 +183,7 @@ const UpsertResearchTemplateForm = ({
         </DialogDescription>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 py-4">
+      <div className="flex-1 overflow-y-auto px-6 py-4 [scrollbar-width:thin] [scrollbar-color:transparent_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-transparent hover:[&::-webkit-scrollbar-thumb]:bg-border/40">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2">
@@ -238,96 +254,110 @@ const UpsertResearchTemplateForm = ({
             />
 
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Itens do template</h3>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() =>
-                    append(createEmptyItem(activeProducts[0]?.id, activeSuppliers[0]?.id))
-                  }
-                >
-                  <Plus className="h-4 w-4" />
-                  Adicionar item
-                </Button>
-              </div>
 
-              {fields.map((fieldItem, index) => (
-                <div key={fieldItem.id} className="space-y-4 rounded-md border p-4">
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold">Item {index + 1}</span>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => remove(index)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <FormField
-                      control={form.control}
-                      name={`items.${index}.productId`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Produto</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecione um produto" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {products.map((product) => (
-                                <SelectItem
-                                  key={product.id}
-                                  value={product.id}
-                                  disabled={!product.isActive}
-                                >
-                                  {product.name} ({product.category.name})
-                                  {!product.isActive ? " - inativo" : ""}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`items.${index}.supplierId`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Fornecedor</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecione um fornecedor" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {suppliers.map((supplier) => (
-                                <SelectItem
-                                  key={supplier.id}
-                                  value={supplier.id}
-                                  disabled={!supplier.isActive}
-                                >
-                                  {supplier.name}
-                                  {!supplier.isActive ? " - inativo" : ""}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+              <div className="rounded-md">
+                <div className="bg-background/95 sticky top-0 z-10 flex items-center justify-between  px-3 py-2">
+                  <h3 className="text-lg font-semibold">Itens do template ({fields.length})</h3>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleAddItem}
+                  >
+                    <Plus className="h-4 w-4" />
+                    Adicionar item
+                  </Button>
                 </div>
-              ))}
+
+                <div
+                  ref={itemsListRef}
+                  className=" grid grid-cols-1 md:grid-cols-3 gap-4 max-h-[40vh] space-y-2 overflow-y-auto p-3 [scrollbar-width:thin] [scrollbar-color:transparent_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-transparent hover:[&::-webkit-scrollbar-thumb]:bg-border/40"
+                >
+                  {fields.map((fieldItem, index) => (
+                    <div
+                      key={fieldItem.id}
+                      className="rounded-md border p-3"
+                    >
+
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm font-medium text-muted-foreground md:pt-2">
+                          Item {index + 1}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => remove(index)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      <div className="mt-4 flex w-full flex-col gap-2">
+                        <FormField
+                          control={form.control}
+                          name={`items.${index}.productId`}
+                          render={({ field }) => (
+                            <FormItem className="w-full space-y-1">
+                              <FormLabel className="text-xs md:sr-only">Produto</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger className="h-9 w-full">
+                                    <SelectValue placeholder="Selecione um produto" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {products.map((product) => (
+                                    <SelectItem
+                                      key={product.id}
+                                      value={product.id}
+                                      disabled={!product.isActive}
+                                    >
+                                      {product.name}
+                                      {!product.isActive ? " - inativo" : ""}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name={`items.${index}.supplierId`}
+                          render={({ field }) => (
+                            <FormItem className="w-full space-y-1">
+                              <FormLabel className="text-xs md:sr-only">Fornecedor</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger className="h-9 w-full">
+                                    <SelectValue placeholder="Selecione um fornecedor" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {suppliers.map((supplier) => (
+                                    <SelectItem
+                                      key={supplier.id}
+                                      value={supplier.id}
+                                      disabled={!supplier.isActive}
+                                    >
+                                      {supplier.name}
+                                      {!supplier.isActive ? " - inativo" : ""}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </form>
         </Form>
