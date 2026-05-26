@@ -20,19 +20,11 @@ export default function Hero({
       aria-labelledby="hero-title"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="border-border relative mx-auto max-w-7xl overflow-hidden rounded-2xl border shadow-sm sm:rounded-3xl">
+        <div className="border-border relative mx-auto max-w-7xl overflow-hidden rounded-2xl border shadow-sm sm:rounded-3xl bg-[#192f58]/90">
           {/* Background Image */}
           <div className="relative aspect-video sm:aspect-16/8 lg:aspect-16/7">
-            <Image
-              src="/Hero.png"
-              alt="Procon Itumbiara - Proteção e Defesa do Consumidor"
-              fill
-              className="object-cover"
-              priority
-              aria-hidden="true"
-            />
             {/* Overlay para melhorar legibilidade do texto */}
-            <div className="from-background/60 via-background/40 to-background/60 absolute inset-0 bg-linear-to-b" />
+
 
             {/* Content */}
             <div className="absolute inset-0 z-10 flex flex-col items-center justify-center px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
