@@ -175,7 +175,9 @@ export default async function PriceSearchDetailPage({
                       productId: string;
                       productName: string;
                       minPrice: number;
+                      minPriceSupplierName: string;
                       maxPrice: number;
+                      maxPriceSupplierName: string;
                     }
                   >();
 
@@ -186,15 +188,19 @@ export default async function PriceSearchDetailPage({
                         productId,
                         productName: item.product.name,
                         minPrice: item.price,
+                        minPriceSupplierName: item.supplier.name,
                         maxPrice: item.price,
+                        maxPriceSupplierName: item.supplier.name,
                       });
                     }
                     const product = productsMap.get(productId)!;
                     if (item.price < product.minPrice) {
                       product.minPrice = item.price;
+                      product.minPriceSupplierName = item.supplier.name;
                     }
                     if (item.price > product.maxPrice) {
                       product.maxPrice = item.price;
+                      product.maxPriceSupplierName = item.supplier.name;
                     }
                   });
 
@@ -218,6 +224,23 @@ export default async function PriceSearchDetailPage({
                   const totalPrices = items.reduce((sum, item) => sum + item.price, 0);
                   const averagePrice = totalPrices / items.length;
 
+                  // Encontrar produto com maior variação percentual
+                  let highestVariationProduct = Array.from(productsMap.values())[0];
+                  let highestVariationPercentage = 0;
+
+                  productsMap.forEach((product) => {
+                    const variationPercentage =
+                      product.minPrice > 0
+                        ? ((product.maxPrice - product.minPrice) / product.minPrice) *
+                        100
+                        : 0;
+
+                    if (variationPercentage > highestVariationPercentage) {
+                      highestVariationPercentage = variationPercentage;
+                      highestVariationProduct = product;
+                    }
+                  });
+
                   return (
                     <section key={categoryData.categoryId} className="mb-12">
                       <h2 className="mb-6 text-xl font-semibold sm:text-2xl">
@@ -225,7 +248,7 @@ export default async function PriceSearchDetailPage({
                       </h2>
 
                       {/* Resumo da categoria */}
-                      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
                         <Card className="border-green-600 dark:border-green-400">
                           <CardContent className="pt-6">
                             <div className="space-y-2">
@@ -235,8 +258,11 @@ export default async function PriceSearchDetailPage({
                               <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                                 {formatCentavosToBRL(cheapestProduct.minPrice)}
                               </p>
-                              <p className="text-muted-foreground text-sm line-clamp-2">
-                                {cheapestProduct.productName}
+                              <p className="text-muted-foreground text-xs line-clamp-2">
+                                Produto: {cheapestProduct.productName}
+                              </p>
+                              <p className="text-muted-foreground text-xs">
+                                Fornecedor: {cheapestProduct.minPriceSupplierName}
                               </p>
                             </div>
                           </CardContent>
@@ -251,8 +277,31 @@ export default async function PriceSearchDetailPage({
                               <p className="text-2xl font-bold text-red-600 dark:text-red-400">
                                 {formatCentavosToBRL(mostExpensiveProduct.maxPrice)}
                               </p>
-                              <p className="text-muted-foreground text-sm line-clamp-2">
-                                {mostExpensiveProduct.productName}
+                              <p className="text-muted-foreground text-xs line-clamp-2">
+                                Produto: {mostExpensiveProduct.productName}
+                              </p>
+                              <p className="text-muted-foreground text-xs">
+                                Fornecedor: {mostExpensiveProduct.maxPriceSupplierName}
+                              </p>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        <Card className="border-primary">
+                          <CardContent className="pt-6">
+                            <div className="space-y-2">
+                              <p className="text-muted-foreground text-sm font-medium">
+                                Maior Variação de Preço
+                              </p>
+                              <p className="text-primary text-2xl font-bold">
+                                {highestVariationPercentage.toFixed(2)}%
+                              </p>
+                              <p className="text-muted-foreground text-xs line-clamp-2">
+                                Produto: {highestVariationProduct.productName}
+                              </p>
+                              <p className="text-muted-foreground text-xs">
+                                Fornecedores: {highestVariationProduct.minPriceSupplierName} x{" "}
+                                {highestVariationProduct.maxPriceSupplierName}
                               </p>
                             </div>
                           </CardContent>
@@ -267,7 +316,7 @@ export default async function PriceSearchDetailPage({
                               <p className="text-primary text-2xl font-bold">
                                 {formatCentavosToBRL(Math.round(averagePrice))}
                               </p>
-                              <p className="text-muted-foreground text-sm">
+                              <p className="text-muted-foreground text-xs">
                                 Média geral da categoria
                               </p>
                             </div>
