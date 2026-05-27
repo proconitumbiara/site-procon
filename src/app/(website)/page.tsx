@@ -146,7 +146,7 @@ export default async function Home() {
                   id={search.id}
                   title={search.title}
                   description={
-                    search.description ||
+                    search.summary ||
                     "Descrição deste serviço estará disponível em breve."
                   }
                   slug={search.slug}

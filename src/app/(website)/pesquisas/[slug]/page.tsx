@@ -115,10 +115,10 @@ export default async function PriceSearchDetailPage({
               )}
             </div>
 
-            {/* Descrição */}
-            {priceSearch.description && (
+            {/* Resumo */}
+            {priceSearch.summary && (
               <div className="prose prose-lg text-foreground prose-headings:text-foreground prose-p:text-foreground prose-p:leading-7 prose-p:mb-4 sm:prose-p:mb-6 prose-strong:text-foreground prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-ul:text-foreground prose-ol:text-foreground prose-li:text-foreground mb-8 max-w-none">
-                <p>{priceSearch.description}</p>
+                <p>{priceSearch.summary}</p>
               </div>
             )}
 

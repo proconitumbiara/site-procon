@@ -82,7 +82,6 @@ const formSchema = z.object({
   title: z.string().trim().min(1, { message: "Informe o título." }),
   slug: z.string().trim().min(1, { message: "Informe o slug." }),
   summary: z.string().trim().optional(),
-  description: z.string().trim().optional(),
   coverImageUrl: z.string().trim().optional(),
   year: z
     .number({ message: "Ano inválido." })
@@ -113,7 +112,6 @@ const getDefaultValues = (
   title: priceSearch?.title ?? "",
   slug: priceSearch?.slug ?? "",
   summary: priceSearch?.summary ?? "",
-  description: priceSearch?.description ?? "",
   coverImageUrl: priceSearch?.coverImageUrl ?? "",
   year: (priceSearch?.year ?? new Date().getFullYear()) as number,
   emphasis: priceSearch?.emphasis ?? false,
@@ -443,7 +441,6 @@ const UpsertPriceSearchForm = ({
       ...values,
       id: priceSearch?.id,
       summary: values.summary || undefined,
-      description: values.description || undefined,
       coverImageUrl: values.coverImageUrl || undefined,
       collectionDate: values.collectionDate || undefined,
       observation: values.observation || undefined,
@@ -540,42 +537,23 @@ const UpsertPriceSearchForm = ({
                 />
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="summary"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Resumo</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          className="min-h-[100px]"
-                          placeholder="Resumo curto para o card"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Descrição</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          className="min-h-[100px]"
-                          placeholder="Descrição detalhada"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="summary"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Resumo</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        className="min-h-[100px]"
+                        placeholder="Resumo curto para o card"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField

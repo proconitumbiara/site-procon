@@ -60,9 +60,7 @@ export default async function PesquisasPage() {
                   key={priceSearch.id}
                   id={priceSearch.id}
                   title={priceSearch.title}
-                  description={
-                    priceSearch.summary ?? priceSearch.description ?? undefined
-                  }
+                  description={priceSearch.summary ?? undefined}
                   slug={priceSearch.slug}
                   image={
                     priceSearch.coverImageUrl || DEFAULT_PRICE_SEARCH_IMAGE

@@ -33,7 +33,6 @@ export const upsertPriceSearchSchema = z.object({
     .trim()
     .min(1, { message: "O slug da pesquisa é obrigatório." }),
   summary: z.string().trim().optional(),
-  description: z.string().trim().optional(),
   coverImageUrl: z.string().trim().optional(),
   emphasis: z.boolean().optional(),
   year: z

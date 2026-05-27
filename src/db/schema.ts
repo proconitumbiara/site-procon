@@ -120,7 +120,6 @@ export const priceSearchesTable = pgTable("price_searches", {
   title: text("title").notNull(),
   slug: text("slug").notNull().unique(),
   summary: text("summary"), //Texto curto para o card da pesquisa de preços
-  description: text("description"), //Descrição da pesquisa de preços
   coverImageUrl: text("cover_image_url"), //URL da imagem de capa da pesquisa de preços
   emphasis: boolean("emphasis").notNull().default(false), //Se a pesquisa de preços é em destaque
   year: integer("year").notNull(), //Ano da pesquisa de preços
