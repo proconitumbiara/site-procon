@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import { db } from "@/db";
 import { newsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { formatSlug } from "@/lib/formatters";
 import { actionClient } from "@/lib/next-safe-action";
 
 import { ErrorMessages, ErrorTypes, upsertNewsSchema } from "./schema";
@@ -38,6 +39,11 @@ export const upsertNews = actionClient
       };
     }
 
+    const slug = formatSlug(parsedInput.title);
+    if (!slug) {
+      throw new Error("Não foi possível gerar um slug válido para a notícia.");
+    }
+
     let newsId: string | undefined;
     await db.transaction(async (tx) => {
       const [result] = await tx
@@ -45,7 +51,7 @@ export const upsertNews = actionClient
         .values({
           id: parsedInput.id,
           title: parsedInput.title.trim(),
-          slug: parsedInput.slug.trim(),
+          slug,
           excerpt: normalizeNullableString(parsedInput.excerpt),
           content: normalizeNullableString(parsedInput.content),
           coverImageUrl: normalizeNullableString(parsedInput.coverImageUrl),
@@ -57,7 +63,7 @@ export const upsertNews = actionClient
           target: [newsTable.id],
           set: {
             title: parsedInput.title.trim(),
-            slug: parsedInput.slug.trim(),
+            slug,
             excerpt: normalizeNullableString(parsedInput.excerpt),
             content: normalizeNullableString(parsedInput.content),
             coverImageUrl: normalizeNullableString(parsedInput.coverImageUrl),

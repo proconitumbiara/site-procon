@@ -50,7 +50,6 @@ const getDefaultValues = (
 ): Partial<FormValues> => ({
   id: form?.id,
   name: form?.name ?? "",
-  slug: form?.slug ?? "",
   isActive: form?.isActive ?? true,
   projectId: form?.projectId ?? projectId ?? "",
 });
@@ -101,7 +100,7 @@ export default function UpsertFormForm({
           onSubmit={form.handleSubmit(onSubmit)}
           className={embedded ? "flex flex-col gap-3" : "flex flex-col gap-4"}
         >
-          <div className={embedded ? "grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_auto_auto]" : "grid gap-4 md:grid-cols-2"}>
+          <div className={embedded ? "grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto_auto]" : "grid gap-4 md:grid-cols-2"}>
             <FormField
               control={form.control}
               name="name"
@@ -110,19 +109,6 @@ export default function UpsertFormForm({
                   <FormLabel className={embedded ? "sr-only" : undefined}>Nome</FormLabel>
                   <FormControl>
                     <Input placeholder="Nome do formulário" {...field} className={embedded ? "h-9" : undefined} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="slug"
-              render={({ field }) => (
-                <FormItem className={embedded ? "min-w-0" : undefined}>
-                  <FormLabel className={embedded ? "sr-only" : undefined}>Slug</FormLabel>
-                  <FormControl>
-                    <Input placeholder="slug-do-formulario" {...field} className={embedded ? "h-9" : undefined} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

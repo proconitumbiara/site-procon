@@ -17,10 +17,6 @@ export const upsertNewsSchema = z.object({
     .string()
     .trim()
     .min(1, { message: "O título da notícia é obrigatório." }),
-  slug: z
-    .string()
-    .trim()
-    .min(1, { message: "O slug da notícia é obrigatório." }),
   excerpt: z.string().trim().optional(),
   content: z.string().trim().optional(),
   coverImageUrl: z.string().trim().optional(),

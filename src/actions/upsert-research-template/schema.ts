@@ -24,10 +24,6 @@ export const upsertResearchTemplateSchema = z
       .string()
       .trim()
       .min(1, { message: "O nome do template é obrigatório." }),
-    slug: z
-      .string()
-      .trim()
-      .min(1, { message: "O slug do template é obrigatório." }),
     description: z.string().trim().optional(),
     isActive: z.boolean().optional(),
     items: z.array(itemSchema),

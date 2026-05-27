@@ -66,7 +66,6 @@ const itemSchema = z.object({
 
 const formSchema = z.object({
   name: z.string().trim().min(1, { message: "Informe o nome." }),
-  slug: z.string().trim().min(1, { message: "Informe o slug." }),
   description: z.string().trim().optional(),
   isActive: z.boolean(),
   items: z.array(itemSchema),
@@ -92,7 +91,6 @@ const UpsertResearchTemplateForm = ({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: template?.name ?? "",
-      slug: template?.slug ?? "",
       description: template?.description ?? "",
       isActive: template?.isActive ?? true,
       items:
@@ -147,7 +145,6 @@ const UpsertResearchTemplateForm = ({
     execute({
       id: template?.id,
       name: values.name,
-      slug: values.slug,
       description: values.description || undefined,
       isActive: values.isActive,
       items: values.items.map((item, index) => ({
@@ -195,19 +192,6 @@ const UpsertResearchTemplateForm = ({
                     <FormLabel>Nome</FormLabel>
                     <FormControl>
                       <Input placeholder="Template Dia das Mães" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="slug"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Slug</FormLabel>
-                    <FormControl>
-                      <Input placeholder="template-dia-das-maes" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

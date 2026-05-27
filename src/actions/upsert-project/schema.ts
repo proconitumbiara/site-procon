@@ -17,10 +17,6 @@ export const upsertProjectSchema = z.object({
     .string()
     .trim()
     .min(1, { message: "O título do projeto é obrigatório." }),
-  slug: z
-    .string()
-    .trim()
-    .min(1, { message: "O slug do projeto é obrigatório." }),
   summary: z.string().trim().optional(),
   description: z.string().trim().optional(),
   coverImageUrl: z.string().trim().optional(),

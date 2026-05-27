@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import { db } from "@/db";
 import { formsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { formatSlug } from "@/lib/formatters";
 import { actionClient } from "@/lib/next-safe-action";
 import { eq } from "drizzle-orm";
 
@@ -27,6 +28,13 @@ export const upsertForm = actionClient
       };
     }
 
+    const slug = formatSlug(parsedInput.name);
+    if (!slug) {
+      throw new Error(
+        "Não foi possível gerar um slug válido para o formulário.",
+      );
+    }
+
     let formId: string | undefined;
 
     if (parsedInput.id) {
@@ -34,7 +42,7 @@ export const upsertForm = actionClient
         .update(formsTable)
         .set({
           name: parsedInput.name.trim(),
-          slug: parsedInput.slug.trim(),
+          slug,
           isActive: parsedInput.isActive ?? true,
           updatedAt: new Date(),
         })
@@ -47,7 +55,7 @@ export const upsertForm = actionClient
         .insert(formsTable)
         .values({
           name: parsedInput.name.trim(),
-          slug: parsedInput.slug.trim(),
+          slug,
           isActive: parsedInput.isActive ?? true,
           projectId: parsedInput.projectId,
         })

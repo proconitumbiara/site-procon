@@ -56,7 +56,6 @@ type FormValues = z.infer<typeof formSchema>;
 
 const getDefaultValues = (project?: ProjectWithDocuments): FormValues => ({
   title: project?.title ?? "",
-  slug: project?.slug ?? "",
   summary: project?.summary ?? "",
   description: project?.description ?? "",
   coverImageUrl: project?.coverImageUrl ?? "",
@@ -155,19 +154,6 @@ const UpsertProjectForm = ({
                   <FormLabel>Nome</FormLabel>
                   <FormControl>
                     <Input placeholder="Nome do projeto" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="slug"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Slug</FormLabel>
-                  <FormControl>
-                    <Input placeholder="slug-do-projeto" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

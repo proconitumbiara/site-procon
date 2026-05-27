@@ -12,6 +12,7 @@ import {
   suppliersTable,
 } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { formatSlug } from "@/lib/formatters";
 import { actionClient } from "@/lib/next-safe-action";
 
 import {
@@ -40,6 +41,11 @@ export const upsertResearchTemplate = actionClient
           message: ErrorMessages[ErrorTypes.UNAUTHENTICATED],
         },
       };
+    }
+
+    const slug = formatSlug(parsedInput.name);
+    if (!slug) {
+      throw new Error("Não foi possível gerar um slug válido para o template.");
     }
 
     const productIds = [...new Set(parsedInput.items.map((item) => item.productId))];
@@ -83,7 +89,7 @@ export const upsertResearchTemplate = actionClient
         .values({
           id: parsedInput.id,
           name: parsedInput.name.trim(),
-          slug: parsedInput.slug.trim(),
+          slug,
           description: normalizeNullableString(parsedInput.description),
           isActive: parsedInput.isActive ?? true,
         })
@@ -91,7 +97,7 @@ export const upsertResearchTemplate = actionClient
           target: [researchTemplatesTable.id],
           set: {
             name: parsedInput.name.trim(),
-            slug: parsedInput.slug.trim(),
+            slug,
             description: normalizeNullableString(parsedInput.description),
             isActive: parsedInput.isActive ?? true,
             updatedAt: new Date(),

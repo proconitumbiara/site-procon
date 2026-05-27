@@ -10,3 +10,17 @@ export const formatName = (name?: string | null) => {
     .join(" ")
     .trim();
 };
+
+export const formatSlug = (value?: string | null) => {
+  if (!value) {
+    return "";
+  }
+
+  return value
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+};

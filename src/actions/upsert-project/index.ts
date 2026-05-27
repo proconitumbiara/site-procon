@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import { db } from "@/db";
 import { projectsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { formatSlug } from "@/lib/formatters";
 import { actionClient } from "@/lib/next-safe-action";
 
 import { ErrorMessages, ErrorTypes, upsertProjectSchema } from "./schema";
@@ -32,6 +33,11 @@ export const upsertProject = actionClient
       };
     }
 
+    const slug = formatSlug(parsedInput.title);
+    if (!slug) {
+      throw new Error("Não foi possível gerar um slug válido para o projeto.");
+    }
+
     let projectId: string | undefined;
     await db.transaction(async (tx) => {
       const [result] = await tx
@@ -39,7 +45,7 @@ export const upsertProject = actionClient
         .values({
           id: parsedInput.id,
           title: parsedInput.title.trim(),
-          slug: parsedInput.slug.trim(),
+          slug,
           summary: normalizeNullableString(parsedInput.summary),
           description: normalizeNullableString(parsedInput.description),
           coverImageUrl: normalizeNullableString(parsedInput.coverImageUrl),
@@ -50,7 +56,7 @@ export const upsertProject = actionClient
           target: [projectsTable.id],
           set: {
             title: parsedInput.title.trim(),
-            slug: parsedInput.slug.trim(),
+            slug,
             summary: normalizeNullableString(parsedInput.summary),
             description: normalizeNullableString(parsedInput.description),
             coverImageUrl: normalizeNullableString(parsedInput.coverImageUrl),

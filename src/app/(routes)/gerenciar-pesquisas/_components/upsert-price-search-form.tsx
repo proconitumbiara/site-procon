@@ -80,7 +80,6 @@ const itemFormSchema = z.object({
 
 const formSchema = z.object({
   title: z.string().trim().min(1, { message: "Informe o título." }),
-  slug: z.string().trim().min(1, { message: "Informe o slug." }),
   summary: z.string().trim().optional(),
   coverImageUrl: z.string().trim().optional(),
   year: z
@@ -110,7 +109,6 @@ const getDefaultValues = (
   supplierId?: string,
 ): FormValues => ({
   title: priceSearch?.title ?? "",
-  slug: priceSearch?.slug ?? "",
   summary: priceSearch?.summary ?? "",
   coverImageUrl: priceSearch?.coverImageUrl ?? "",
   year: (priceSearch?.year ?? new Date().getFullYear()) as number,
@@ -517,19 +515,6 @@ const UpsertPriceSearchForm = ({
                       <FormLabel>Título</FormLabel>
                       <FormControl>
                         <Input placeholder="Nome da pesquisa" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="slug"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Slug</FormLabel>
-                      <FormControl>
-                        <Input placeholder="pesquisa-2024" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

@@ -12,6 +12,7 @@ import {
   suppliersTable,
 } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { formatSlug } from "@/lib/formatters";
 import { actionClient } from "@/lib/next-safe-action";
 
 import { ErrorMessages, ErrorTypes, upsertPriceSearchSchema } from "./schema";
@@ -36,6 +37,11 @@ export const upsertPriceSearch = actionClient
           message: ErrorMessages[ErrorTypes.UNAUTHENTICATED],
         },
       };
+    }
+
+    const slug = formatSlug(parsedInput.title);
+    if (!slug) {
+      throw new Error("Não foi possível gerar um slug válido para a pesquisa.");
     }
 
     const productIds = [...new Set(parsedInput.items.map((item) => item.productId))];
@@ -76,7 +82,7 @@ export const upsertPriceSearch = actionClient
         .values({
           id: parsedInput.id,
           title: parsedInput.title.trim(),
-          slug: parsedInput.slug.trim(),
+          slug,
           summary: normalizeNullableString(parsedInput.summary),
           coverImageUrl: normalizeNullableString(parsedInput.coverImageUrl),
           emphasis: parsedInput.emphasis ?? false,
@@ -88,7 +94,7 @@ export const upsertPriceSearch = actionClient
           target: [priceSearchesTable.id],
           set: {
             title: parsedInput.title.trim(),
-            slug: parsedInput.slug.trim(),
+            slug,
             summary: normalizeNullableString(parsedInput.summary),
             coverImageUrl: normalizeNullableString(parsedInput.coverImageUrl),
             emphasis: parsedInput.emphasis ?? false,

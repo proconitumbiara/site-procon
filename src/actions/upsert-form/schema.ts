@@ -17,10 +17,6 @@ export const upsertFormSchema = z.object({
     .string()
     .trim()
     .min(1, { message: "O nome do formulário é obrigatório." }),
-  slug: z
-    .string()
-    .trim()
-    .min(1, { message: "O slug do formulário é obrigatório." }),
   isActive: z.boolean(),
   projectId: z.string().uuid({ message: "O projeto é obrigatório." }),
 });

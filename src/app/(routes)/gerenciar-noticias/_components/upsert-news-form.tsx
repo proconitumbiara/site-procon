@@ -45,7 +45,6 @@ type FormValues = z.infer<typeof formSchema>;
 
 const getDefaultValues = (news?: NewsRecord): FormValues => ({
   title: news?.title ?? "",
-  slug: news?.slug ?? "",
   excerpt: news?.excerpt ?? "",
   content: news?.content ?? "",
   coverImageUrl: news?.coverImageUrl ?? "",
@@ -148,19 +147,6 @@ const UpsertNewsForm = ({
                   <FormLabel>Título</FormLabel>
                   <FormControl>
                     <Input placeholder="Título da notícia" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="slug"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Slug</FormLabel>
-                  <FormControl>
-                    <Input placeholder="slug-da-noticia" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
