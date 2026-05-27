@@ -248,6 +248,7 @@ const UpsertPriceSearchForm = ({
     Record<number, string>
   >({});
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
   const productSearchInputRefs = useRef<
     Record<number, HTMLInputElement | null>
   >({});
@@ -454,6 +455,34 @@ const UpsertPriceSearchForm = ({
     });
   };
 
+  const uploadCoverImage = async (file: File) => {
+    setIsUploadingCover(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("type", "projects");
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error ?? "Falha ao enviar imagem.");
+      }
+
+      form.setValue("coverImageUrl", result.fileUrl, { shouldDirty: true });
+      toast.success("Imagem enviada com sucesso!");
+    } catch (error) {
+      console.error("Cover upload error", error);
+      toast.error("Não foi possível enviar a imagem da capa.");
+    } finally {
+      setIsUploadingCover(false);
+    }
+  };
+
   const itemErrorMessage = useMemo(() => {
     const error = form.formState.errors.items;
     if (!error) return null;
@@ -554,9 +583,56 @@ const UpsertPriceSearchForm = ({
                   name="coverImageUrl"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>URL da imagem (opcional)</FormLabel>
+                      <FormLabel>Imagem de capa</FormLabel>
                       <FormControl>
-                        <Input placeholder="https://..." {...field} />
+                        <div className="space-y-3">
+                          <input type="hidden" {...field} />
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={async (event) => {
+                              const file = event.target.files?.[0];
+                              if (file) {
+                                await uploadCoverImage(file);
+                              }
+                            }}
+                          />
+                          {(field.value || isUploadingCover) && (
+                            <div className="space-y-2">
+                              {isUploadingCover ? (
+                                <div className="text-muted-foreground flex items-center gap-2 text-sm">
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                  Enviando imagem...
+                                </div>
+                              ) : (
+                                <>
+                                  <div className="relative h-40 w-full overflow-hidden rounded-md border">
+                                    {field.value && (
+                                      // eslint-disable-next-line @next/next/no-img-element
+                                      <img
+                                        src={field.value}
+                                        alt="Prévia da capa"
+                                        className="h-full w-full object-cover"
+                                      />
+                                    )}
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      form.setValue("coverImageUrl", "", {
+                                        shouldDirty: true,
+                                      })
+                                    }
+                                  >
+                                    Remover capa
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
