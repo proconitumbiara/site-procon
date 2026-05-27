@@ -131,6 +131,88 @@ const getDefaultValues = (
 const sortByName = <T extends { name: string }>(items: T[]) =>
   [...items].sort((a, b) => a.name.localeCompare(b.name));
 
+const MAX_SELECT_OPTIONS = 20;
+
+const buildLimitedProductsByCategory = (
+  filteredProducts: Product[],
+  selectedProductId?: string,
+) => {
+  const productsByCategory: Record<string, Product[]> = {};
+  filteredProducts.forEach((product) => {
+    const catName = product.category.name;
+    if (!productsByCategory[catName]) {
+      productsByCategory[catName] = [];
+    }
+    productsByCategory[catName].push(product);
+  });
+
+  const limited: Record<string, Product[]> = {};
+  let count = 0;
+  for (const [catName, prods] of Object.entries(productsByCategory)) {
+    if (count >= MAX_SELECT_OPTIONS) break;
+    const remaining = MAX_SELECT_OPTIONS - count;
+    const toTake = Math.min(remaining, prods.length);
+    if (toTake > 0) {
+      limited[catName] = prods.slice(0, toTake);
+      count += toTake;
+    }
+  }
+
+  if (selectedProductId) {
+    const isSelectedVisible = Object.values(limited)
+      .flat()
+      .some((product) => product.id === selectedProductId);
+
+    if (!isSelectedVisible) {
+      const selected = filteredProducts.find(
+        (product) => product.id === selectedProductId,
+      );
+      if (selected) {
+        const catName = selected.category.name;
+        if (!limited[catName]) {
+          limited[catName] = [];
+        }
+        if (!limited[catName].some((product) => product.id === selectedProductId)) {
+          limited[catName] = [selected, ...limited[catName]];
+          count += 1;
+        }
+      }
+    }
+  }
+
+  const totalShown = Object.values(limited).reduce(
+    (sum, prods) => sum + prods.length,
+    0,
+  );
+  const hasMore = filteredProducts.length > totalShown;
+
+  return { limited, totalShown, hasMore };
+};
+
+const buildLimitedSuppliers = (
+  filteredSuppliers: Supplier[],
+  selectedSupplierId?: string,
+) => {
+  let limited = filteredSuppliers.slice(0, MAX_SELECT_OPTIONS);
+
+  if (
+    selectedSupplierId &&
+    !limited.some((supplier) => supplier.id === selectedSupplierId)
+  ) {
+    const selected = filteredSuppliers.find(
+      (supplier) => supplier.id === selectedSupplierId,
+    );
+    if (selected) {
+      limited = [selected, ...limited.slice(0, MAX_SELECT_OPTIONS - 1)];
+    }
+  }
+
+  const totalShown = limited.length;
+  const hasMore = filteredSuppliers.length > totalShown;
+
+  return { limited, totalShown, hasMore };
+};
+
 const UpsertPriceSearchForm = ({
   priceSearch,
   suppliers: initialSuppliers,
@@ -185,7 +267,7 @@ const UpsertPriceSearchForm = ({
     ),
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, replace } = useFieldArray({
     control: form.control,
     name: "items",
   });
@@ -219,19 +301,20 @@ const UpsertPriceSearchForm = ({
       return;
     }
 
-    form.setValue(
-      "items",
+    replace(
       template.items.map((item) => ({
         productId: item.productId,
         supplierId: item.supplierId,
         price: "",
       })),
-      { shouldDirty: true, shouldValidate: true },
     );
 
     setProductSearchTerms({});
     setSupplierSearchTerms({});
-    toast.success("Itens do template carregados com sucesso.");
+    void form.trigger("items");
+    toast.success(
+      `${template.items.length} itens carregados. Preencha os preços antes de salvar.`,
+    );
   };
 
   const { execute, status } = useAction(upsertPriceSearch, {
@@ -791,7 +874,7 @@ const UpsertPriceSearchForm = ({
                   </p>
                 )}
 
-                <div className="space-y-4">
+                <div className="space-y-4 ">
                   {fields.map((fieldItem, index) => (
                     <div
                       key={fieldItem.id}
@@ -847,6 +930,152 @@ const UpsertPriceSearchForm = ({
                       <div className="grid gap-4 md:grid-cols-3">
                         <FormField
                           control={form.control}
+                          name={`items.${index}.supplierId`}
+                          render={({ field }) => {
+                            const searchTerm = supplierSearchTerms[index] || "";
+
+                            // Filtrar fornecedores
+                            let filteredSuppliers = suppliers;
+                            if (searchTerm.trim()) {
+                              const term = searchTerm.toLowerCase();
+                              filteredSuppliers = suppliers.filter((s) =>
+                                s.name.toLowerCase().includes(term),
+                              );
+                            }
+
+                            const {
+                              limited: limitedSuppliers,
+                              totalShown: suppliersShown,
+                              hasMore,
+                            } = buildLimitedSuppliers(
+                              filteredSuppliers,
+                              field.value,
+                            );
+
+                            const selectedSupplierLabel = field.value
+                              ? suppliers.find(
+                                (supplier) => supplier.id === field.value,
+                              )?.name
+                              : undefined;
+
+                            return (
+                              <FormItem>
+                                <FormLabel>Fornecedor</FormLabel>
+                                <Select
+                                  onValueChange={(value) => {
+                                    field.onChange(value);
+                                    setSupplierSearchTerms((prev) => ({
+                                      ...prev,
+                                      [index]: "",
+                                    }));
+                                  }}
+                                  value={field.value}
+                                  disabled={!suppliers.length}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Selecione">
+                                        {selectedSupplierLabel}
+                                      </SelectValue>
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent className="max-h-[300px]">
+                                    <div className="bg-popover sticky top-0 z-10 border-b p-2">
+                                      <div className="relative">
+                                        <Search className="text-muted-foreground absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2" />
+                                        <Input
+                                          ref={(input) => {
+                                            supplierSearchInputRefs.current[
+                                              index
+                                            ] = input;
+                                            if (input) {
+                                              setTimeout(
+                                                () => input.focus(),
+                                                0,
+                                              );
+                                            }
+                                          }}
+                                          placeholder="Buscar fornecedor..."
+                                          value={searchTerm}
+                                          onChange={(e) => {
+                                            setSupplierSearchTerms((prev) => ({
+                                              ...prev,
+                                              [index]: e.target.value,
+                                            }));
+                                          }}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                          }}
+                                          onMouseDown={(e) => {
+                                            e.stopPropagation();
+                                          }}
+                                          onPointerDown={(e) => {
+                                            e.stopPropagation();
+                                          }}
+                                          onKeyDown={(e) => {
+                                            e.stopPropagation();
+                                            // Permitir Escape para fechar o select
+                                            if (e.key === "Escape") {
+                                              return;
+                                            }
+                                            // Permitir Enter apenas se houver um item selecionado
+                                            if (e.key === "Enter") {
+                                              const firstItem =
+                                                limitedSuppliers[0];
+                                              if (firstItem) {
+                                                field.onChange(firstItem.id);
+                                                setSupplierSearchTerms(
+                                                  (prev) => ({
+                                                    ...prev,
+                                                    [index]: "",
+                                                  }),
+                                                );
+                                              }
+                                              e.preventDefault();
+                                              return;
+                                            }
+                                            // Para todas as outras teclas, apenas impedir que o Select as capture
+                                            // mas permitir que o input as processe normalmente
+                                          }}
+                                          onFocus={(e) => {
+                                            e.stopPropagation();
+                                          }}
+                                          className="h-8 pl-8"
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="max-h-[240px] overflow-y-auto">
+                                      {limitedSuppliers.length === 0 ? (
+                                        <div className="text-muted-foreground px-2 py-6 text-center text-sm">
+                                          Nenhum fornecedor encontrado
+                                        </div>
+                                      ) : (
+                                        limitedSuppliers.map((supplier) => (
+                                          <SelectItem
+                                            key={supplier.id}
+                                            value={supplier.id}
+                                          >
+                                            {supplier.name}
+                                          </SelectItem>
+                                        ))
+                                      )}
+                                      {hasMore && (
+                                        <div className="text-muted-foreground border-t px-2 py-2 text-center text-xs">
+                                          Mostrando {suppliersShown} de{" "}
+                                          {filteredSuppliers.length}{" "}
+                                          fornecedores
+                                        </div>
+                                      )}
+                                    </div>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            );
+                          }}
+                        />
+                        <FormField
+                          control={form.control}
                           name={`items.${index}.productId`}
                           render={({ field }) => {
                             const searchTerm = productSearchTerms[index] || "";
@@ -862,45 +1091,16 @@ const UpsertPriceSearchForm = ({
                               );
                             }
 
-                            // Agrupar produtos por categoria
-                            const productsByCategory: Record<
-                              string,
-                              typeof filteredProducts
-                            > = {};
-                            filteredProducts.forEach((product) => {
-                              const catName = product.category.name;
-                              if (!productsByCategory[catName]) {
-                                productsByCategory[catName] = [];
-                              }
-                              productsByCategory[catName].push(product);
-                            });
+                            const { limited: limitedProducts, totalShown, hasMore } =
+                              buildLimitedProductsByCategory(
+                                filteredProducts,
+                                field.value,
+                              );
 
-                            // Limitar a 20 itens mantendo organização por categoria
-                            const limitedProducts: Record<
-                              string,
-                              typeof filteredProducts
-                            > = {};
-                            let count = 0;
-                            for (const [catName, prods] of Object.entries(
-                              productsByCategory,
-                            )) {
-                              if (count >= 20) break;
-                              const remaining = 20 - count;
-                              const toTake = Math.min(remaining, prods.length);
-                              if (toTake > 0) {
-                                limitedProducts[catName] = prods.slice(
-                                  0,
-                                  toTake,
-                                );
-                                count += toTake;
-                              }
-                            }
-
-                            const totalShown = Object.values(
-                              limitedProducts,
-                            ).reduce((sum, prods) => sum + prods.length, 0);
-                            const hasMore =
-                              filteredProducts.length > totalShown;
+                            const selectedProductLabel = field.value
+                              ? products.find((product) => product.id === field.value)
+                                ?.name
+                              : undefined;
 
                             return (
                               <FormItem>
@@ -918,7 +1118,9 @@ const UpsertPriceSearchForm = ({
                                 >
                                   <FormControl>
                                     <SelectTrigger>
-                                      <SelectValue placeholder="Selecione um produto" />
+                                      <SelectValue placeholder="Selecione um produto">
+                                        {selectedProductLabel}
+                                      </SelectValue>
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent className="max-h-[300px]">
@@ -1017,142 +1219,6 @@ const UpsertPriceSearchForm = ({
                                         <div className="text-muted-foreground border-t px-2 py-2 text-center text-xs">
                                           Mostrando {totalShown} de{" "}
                                           {filteredProducts.length} produtos
-                                        </div>
-                                      )}
-                                    </div>
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            );
-                          }}
-                        />
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.supplierId`}
-                          render={({ field }) => {
-                            const searchTerm = supplierSearchTerms[index] || "";
-
-                            // Filtrar fornecedores
-                            let filteredSuppliers = suppliers;
-                            if (searchTerm.trim()) {
-                              const term = searchTerm.toLowerCase();
-                              filteredSuppliers = suppliers.filter((s) =>
-                                s.name.toLowerCase().includes(term),
-                              );
-                            }
-
-                            // Limitar a 20 itens
-                            const limitedSuppliers = filteredSuppliers.slice(
-                              0,
-                              20,
-                            );
-                            const hasMore = filteredSuppliers.length > 20;
-
-                            return (
-                              <FormItem>
-                                <FormLabel>Fornecedor</FormLabel>
-                                <Select
-                                  onValueChange={(value) => {
-                                    field.onChange(value);
-                                    setSupplierSearchTerms((prev) => ({
-                                      ...prev,
-                                      [index]: "",
-                                    }));
-                                  }}
-                                  value={field.value}
-                                  disabled={!suppliers.length}
-                                >
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Selecione" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent className="max-h-[300px]">
-                                    <div className="bg-popover sticky top-0 z-10 border-b p-2">
-                                      <div className="relative">
-                                        <Search className="text-muted-foreground absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2" />
-                                        <Input
-                                          ref={(input) => {
-                                            supplierSearchInputRefs.current[
-                                              index
-                                            ] = input;
-                                            if (input) {
-                                              setTimeout(
-                                                () => input.focus(),
-                                                0,
-                                              );
-                                            }
-                                          }}
-                                          placeholder="Buscar fornecedor..."
-                                          value={searchTerm}
-                                          onChange={(e) => {
-                                            setSupplierSearchTerms((prev) => ({
-                                              ...prev,
-                                              [index]: e.target.value,
-                                            }));
-                                          }}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                          }}
-                                          onMouseDown={(e) => {
-                                            e.stopPropagation();
-                                          }}
-                                          onPointerDown={(e) => {
-                                            e.stopPropagation();
-                                          }}
-                                          onKeyDown={(e) => {
-                                            e.stopPropagation();
-                                            // Permitir Escape para fechar o select
-                                            if (e.key === "Escape") {
-                                              return;
-                                            }
-                                            // Permitir Enter apenas se houver um item selecionado
-                                            if (e.key === "Enter") {
-                                              const firstItem =
-                                                limitedSuppliers[0];
-                                              if (firstItem) {
-                                                field.onChange(firstItem.id);
-                                                setSupplierSearchTerms(
-                                                  (prev) => ({
-                                                    ...prev,
-                                                    [index]: "",
-                                                  }),
-                                                );
-                                              }
-                                              e.preventDefault();
-                                              return;
-                                            }
-                                            // Para todas as outras teclas, apenas impedir que o Select as capture
-                                            // mas permitir que o input as processe normalmente
-                                          }}
-                                          onFocus={(e) => {
-                                            e.stopPropagation();
-                                          }}
-                                          className="h-8 pl-8"
-                                        />
-                                      </div>
-                                    </div>
-                                    <div className="max-h-[240px] overflow-y-auto">
-                                      {limitedSuppliers.length === 0 ? (
-                                        <div className="text-muted-foreground px-2 py-6 text-center text-sm">
-                                          Nenhum fornecedor encontrado
-                                        </div>
-                                      ) : (
-                                        limitedSuppliers.map((supplier) => (
-                                          <SelectItem
-                                            key={supplier.id}
-                                            value={supplier.id}
-                                          >
-                                            {supplier.name}
-                                          </SelectItem>
-                                        ))
-                                      )}
-                                      {hasMore && (
-                                        <div className="text-muted-foreground border-t px-2 py-2 text-center text-xs">
-                                          Mostrando {limitedSuppliers.length} de{" "}
-                                          {filteredSuppliers.length}{" "}
-                                          fornecedores
                                         </div>
                                       )}
                                     </div>

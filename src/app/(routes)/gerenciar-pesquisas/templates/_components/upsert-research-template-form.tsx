@@ -294,35 +294,7 @@ const UpsertResearchTemplateForm = ({
                       </div>
 
                       <div className="mt-4 flex w-full flex-col gap-2">
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.productId`}
-                          render={({ field }) => (
-                            <FormItem className="w-full space-y-1">
-                              <FormLabel className="text-xs md:sr-only">Produto</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl>
-                                  <SelectTrigger className="h-9 w-full">
-                                    <SelectValue placeholder="Selecione um produto" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {products.map((product) => (
-                                    <SelectItem
-                                      key={product.id}
-                                      value={product.id}
-                                      disabled={!product.isActive}
-                                    >
-                                      {product.name}
-                                      {!product.isActive ? " - inativo" : ""}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+
 
                         <FormField
                           control={form.control}
@@ -345,6 +317,36 @@ const UpsertResearchTemplateForm = ({
                                     >
                                       {supplier.name}
                                       {!supplier.isActive ? " - inativo" : ""}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name={`items.${index}.productId`}
+                          render={({ field }) => (
+                            <FormItem className="w-full space-y-1">
+                              <FormLabel className="text-xs md:sr-only">Produto</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger className="h-9 w-full">
+                                    <SelectValue placeholder="Selecione um produto" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {products.map((product) => (
+                                    <SelectItem
+                                      key={product.id}
+                                      value={product.id}
+                                      disabled={!product.isActive}
+                                    >
+                                      {product.name}
+                                      {!product.isActive ? " - inativo" : ""}
                                     </SelectItem>
                                   ))}
                                 </SelectContent>
