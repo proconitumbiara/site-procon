@@ -26,13 +26,13 @@ export default function PriceSearchCard({
   const href = slug ? `/pesquisas/${slug}` : `/pesquisas/${id}`;
 
   return (
-    <div className="bg-card border-border group hover:border-primary flex h-full flex-col rounded-lg border p-6 transition-all duration-300 hover:shadow-lg">
-      <div className="bg-muted/50 relative mb-4 flex h-48 w-full items-center justify-center overflow-hidden rounded-lg">
+    <div className="bg-card border-border group hover:border-primary flex h-full flex-col rounded-lg border p-6 transition-all duration-300 hover:scale-105 hover:shadow-lg">
+      <div className="bg-muted/50 relative mb-4 h-48 w-full overflow-hidden rounded-lg">
         <Image
           src={image}
           alt={altText}
           fill
-          className="object-contain transition-all duration-300 group-hover:scale-110 md:grayscale mix-blend-multiply md:group-hover:grayscale-0"
+          className="object-cover transition-transform duration-300 group-hover:scale-110"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
       </div>
