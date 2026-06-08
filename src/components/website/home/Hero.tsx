@@ -18,12 +18,9 @@ export default function Hero({
       aria-labelledby="hero-title"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="border-border relative mx-auto max-w-7xl overflow-hidden rounded-2xl border shadow-sm sm:rounded-3xl">
+        <div className="border-border relative mx-auto max-w-7xl overflow-hidden rounded-2xl border shadow-sm sm:rounded-3xl bg-[#fafafa]">
           {/* Background Image */}
           <div className="relative aspect-video sm:aspect-16/8 lg:aspect-16/7">
-            {/* Overlay para melhorar legibilidade do texto */}
-
-
             {/* Content */}
             <div className="absolute inset-0 z-10 flex flex-col items-center justify-center px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
               <div className="flex w-full max-w-4xl flex-col items-center justify-center">
