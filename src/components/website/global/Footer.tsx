@@ -154,10 +154,10 @@ export default function Footer() {
             <div className="flex items-center gap-2">
               <Link href="https://www.itumbiara.go.gov.br/" target="_blank">
                 <Image
-                  src="/LogoPrefeitura.png"
-                  alt="Prefeitura de Itumbiara"
-                  width={100}
-                  height={100}
+                  src="/LogoMunicipio.png"
+                  alt="Município de Itumbiara"
+                  width={60}
+                  height={60}
                 />
               </Link>
             </div>
