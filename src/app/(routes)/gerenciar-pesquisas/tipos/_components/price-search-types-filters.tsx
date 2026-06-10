@@ -4,6 +4,13 @@ import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { priceSearchTypesTable } from "@/db/schema";
 
 import { priceSearchTypesTableColumns } from "./price-search-types-table-columns";
@@ -48,15 +55,16 @@ export default function PriceSearchTypesFilters({
           onChange={(e) => setNameFilter(e.target.value)}
           className="rounded border p-2 text-sm"
         />
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded border p-2 text-sm"
-        >
-          <option value="all">Todos</option>
-          <option value="active">Ativos</option>
-          <option value="inactive">Inativos</option>
-        </select>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-[160px]">
+            <SelectValue placeholder="Todos" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos</SelectItem>
+            <SelectItem value="active">Ativos</SelectItem>
+            <SelectItem value="inactive">Inativos</SelectItem>
+          </SelectContent>
+        </Select>
         <Button
           onClick={() => {
             setNameFilter("");

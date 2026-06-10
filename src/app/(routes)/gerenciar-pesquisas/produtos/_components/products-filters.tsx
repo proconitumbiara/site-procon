@@ -5,6 +5,13 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   categoriesTable,
   priceSearchTypesTable,
   productsTable,
@@ -30,18 +37,18 @@ export default function ProductsFilters({
   priceSearchTypes,
 }: ProductsFiltersProps) {
   const [nameFilter, setNameFilter] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("");
-  const [typeFilter, setTypeFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
 
   const filteredProducts = useMemo(() => {
     let filtered = products.filter(
       (product) =>
         product.name.toLowerCase().includes(nameFilter.toLowerCase()) &&
-        (categoryFilter ? product.categoryId === categoryFilter : true) &&
-        (typeFilter ? product.priceSearchTypeId === typeFilter : true),
+        (categoryFilter !== "all" ? product.categoryId === categoryFilter : true) &&
+        (typeFilter !== "all" ? product.priceSearchTypeId === typeFilter : true),
     );
     // Se não há filtros, ordena por createdAT do mais novo para o mais antigo
-    if (!nameFilter && !categoryFilter && !typeFilter) {
+    if (!nameFilter && categoryFilter === "all" && typeFilter === "all") {
       filtered = [...filtered].sort((a, b) => {
         const dateA = new Date(a.createdAT).getTime();
         const dateB = new Date(b.createdAT).getTime();
@@ -66,37 +73,37 @@ export default function ProductsFilters({
           onChange={(e) => setNameFilter(e.target.value)}
           className="rounded border p-2 text-sm"
         />
-        <select
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-          className="rounded border p-2 text-sm"
-        >
-          <option value="" className="bg-background">
-            Todas as categorias
-          </option>
-          {categories.map((category) => (
-            <option key={category.id} value={category.id} className="bg-background">
-              {category.name}
-            </option>
-          ))}
-        </select>
-        <select
-          value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value)}
-          className="rounded border p-2 text-sm"
-        >
-          <option value="">Todos os tipos</option>
-          {priceSearchTypes.map((type) => (
-            <option key={type.id} value={type.id}>
-              {type.name}
-            </option>
-          ))}
-        </select>
+        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Todas as categorias" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todas as categorias</SelectItem>
+            {categories.map((category) => (
+              <SelectItem key={category.id} value={category.id}>
+                {category.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={typeFilter} onValueChange={setTypeFilter}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Todos os tipos" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os tipos</SelectItem>
+            {priceSearchTypes.map((type) => (
+              <SelectItem key={type.id} value={type.id}>
+                {type.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <Button
           onClick={() => {
             setNameFilter("");
-            setCategoryFilter("");
-            setTypeFilter("");
+            setCategoryFilter("all");
+            setTypeFilter("all");
           }}
           variant="link"
         >

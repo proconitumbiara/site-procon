@@ -13,6 +13,13 @@ import {
   DialogFooter,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { priceSearchTypesTable, suppliersTable } from "@/db/schema";
 
 type Supplier = typeof suppliersTable.$inferSelect;
@@ -96,18 +103,21 @@ const UpsertSupplierForm = ({
       <div className="space-y-4">
         <div>
           <label className="text-sm font-medium">Tipo de pesquisa</label>
-          <select
-            className="mt-1 w-full rounded-md border px-3 py-2"
+          <Select
             value={priceSearchTypeId}
-            onChange={(e) => setPriceSearchTypeId(e.target.value)}
+            onValueChange={setPriceSearchTypeId}
           >
-            <option value="">Selecione um tipo</option>
-            {selectableTypes.map((type) => (
-              <option key={type.id} value={type.id}>
-                {type.name}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="mt-1 w-full">
+              <SelectValue placeholder="Selecione um tipo" />
+            </SelectTrigger>
+            <SelectContent>
+              {selectableTypes.map((type) => (
+                <SelectItem key={type.id} value={type.id}>
+                  {type.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div>
           <label className="text-sm font-medium">Nome</label>

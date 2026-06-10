@@ -5,6 +5,13 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   categoriesTable,
   priceSearchTypesTable,
   productsTable,
@@ -46,7 +53,7 @@ const ResearchTemplatesFilters = ({
 }: ResearchTemplatesFiltersProps) => {
   const [nameFilter, setNameFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [typeFilter, setTypeFilter] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
 
   const filteredTemplates = useMemo(() => {
     return templates.filter((template) => {
@@ -59,9 +66,10 @@ const ResearchTemplatesFilters = ({
           : statusFilter === "active"
             ? template.isActive
             : !template.isActive;
-      const matchesType = typeFilter
-        ? template.priceSearchTypeId === typeFilter
-        : true;
+      const matchesType =
+        typeFilter !== "all"
+          ? template.priceSearchTypeId === typeFilter
+          : true;
 
       return matchesName && matchesStatus && matchesType;
     });
@@ -82,32 +90,34 @@ const ResearchTemplatesFilters = ({
           onChange={(e) => setNameFilter(e.target.value)}
           className="rounded border p-2 text-sm"
         />
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded border p-2 text-sm"
-        >
-          <option value="all">Todos</option>
-          <option value="active">Ativos</option>
-          <option value="inactive">Inativos</option>
-        </select>
-        <select
-          value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value)}
-          className="rounded border p-2 text-sm"
-        >
-          <option value="">Todos os tipos</option>
-          {priceSearchTypes.map((type) => (
-            <option key={type.id} value={type.id}>
-              {type.name}
-            </option>
-          ))}
-        </select>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-[160px]">
+            <SelectValue placeholder="Todos" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos</SelectItem>
+            <SelectItem value="active">Ativos</SelectItem>
+            <SelectItem value="inactive">Inativos</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={typeFilter} onValueChange={setTypeFilter}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Todos os tipos" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os tipos</SelectItem>
+            {priceSearchTypes.map((type) => (
+              <SelectItem key={type.id} value={type.id}>
+                {type.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <Button
           onClick={() => {
             setNameFilter("");
             setStatusFilter("all");
-            setTypeFilter("");
+            setTypeFilter("all");
           }}
           variant="link"
         >
