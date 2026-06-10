@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import {
   categoriesTable,
+  priceSearchTypesTable,
   productsTable,
   researchTemplatesTable,
   suppliersTable,
@@ -28,19 +29,24 @@ type ResearchTemplate = typeof researchTemplatesTable.$inferSelect & {
   }>;
 };
 
+type PriceSearchType = typeof priceSearchTypesTable.$inferSelect;
+
 interface ResearchTemplatesFiltersProps {
   templates: ResearchTemplate[];
   products: Product[];
   suppliers: Supplier[];
+  priceSearchTypes: PriceSearchType[];
 }
 
 const ResearchTemplatesFilters = ({
   templates,
   products,
   suppliers,
+  priceSearchTypes,
 }: ResearchTemplatesFiltersProps) => {
   const [nameFilter, setNameFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("");
 
   const filteredTemplates = useMemo(() => {
     return templates.filter((template) => {
@@ -53,14 +59,17 @@ const ResearchTemplatesFilters = ({
           : statusFilter === "active"
             ? template.isActive
             : !template.isActive;
+      const matchesType = typeFilter
+        ? template.priceSearchTypeId === typeFilter
+        : true;
 
-      return matchesName && matchesStatus;
+      return matchesName && matchesStatus && matchesType;
     });
-  }, [templates, nameFilter, statusFilter]);
+  }, [templates, nameFilter, statusFilter, typeFilter]);
 
   const columns = useMemo(
-    () => researchTemplatesTableColumns(products, suppliers),
-    [products, suppliers],
+    () => researchTemplatesTableColumns(products, suppliers, priceSearchTypes),
+    [products, suppliers, priceSearchTypes],
   );
 
   return (
@@ -82,10 +91,23 @@ const ResearchTemplatesFilters = ({
           <option value="active">Ativos</option>
           <option value="inactive">Inativos</option>
         </select>
+        <select
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value)}
+          className="rounded border p-2 text-sm"
+        >
+          <option value="">Todos os tipos</option>
+          {priceSearchTypes.map((type) => (
+            <option key={type.id} value={type.id}>
+              {type.name}
+            </option>
+          ))}
+        </select>
         <Button
           onClick={() => {
             setNameFilter("");
             setStatusFilter("all");
+            setTypeFilter("");
           }}
           variant="link"
         >

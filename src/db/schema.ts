@@ -114,11 +114,25 @@ export const servicesTable = pgTable("services", {
     .$onUpdate(() => new Date()),
 });
 
+export const priceSearchTypesTable = pgTable("price_search_types", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  periodicity: text("periodicity").notNull(),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAT: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
 //Tabela para armazenar pesquisas de preços
 export const priceSearchesTable = pgTable("price_searches", {
   id: uuid("id").primaryKey().defaultRandom(),
   title: text("title").notNull(),
   slug: text("slug").notNull().unique(),
+  priceSearchTypeId: uuid("price_search_type_id")
+    .notNull()
+    .references(() => priceSearchTypesTable.id, { onDelete: "cascade" }),
   summary: text("summary"), //Texto curto para o card da pesquisa de preços
   coverImageUrl: text("cover_image_url"), //URL da imagem de capa da pesquisa de preços
   emphasis: boolean("emphasis").notNull().default(false), //Se a pesquisa de preços é em destaque
@@ -137,6 +151,9 @@ export const suppliersTable = pgTable("suppliers", {
   name: text("name").notNull(),
   address: text("address"),
   phone: text("phone"),
+  priceSearchTypeId: uuid("price_search_type_id")
+    .notNull()
+    .references(() => priceSearchTypesTable.id, { onDelete: "cascade" }),
   isActive: boolean("is_active").notNull().default(true),
   createdAT: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
@@ -158,6 +175,9 @@ export const categoriesTable = pgTable("categories", {
 export const productsTable = pgTable("products", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
+  priceSearchTypeId: uuid("price_search_type_id")
+    .notNull()
+    .references(() => priceSearchTypesTable.id, { onDelete: "cascade" }),
   categoryId: uuid("category_id")
     .notNull()
     .references(() => categoriesTable.id, { onDelete: "cascade" }),
@@ -172,6 +192,9 @@ export const productsTable = pgTable("products", {
 export const researchTemplatesTable = pgTable("research_templates", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
+  priceSearchTypeId: uuid("price_search_type_id")
+    .notNull()
+    .references(() => priceSearchTypesTable.id, { onDelete: "cascade" }),
   slug: text("slug").notNull().unique(),
   description: text("description"),
   isActive: boolean("is_active").notNull().default(true),

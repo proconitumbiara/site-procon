@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import {
   categoriesTable,
+  priceSearchTypesTable,
   productsTable,
   researchTemplatesTable,
   suppliersTable,
@@ -31,9 +32,12 @@ type ResearchTemplate = typeof researchTemplatesTable.$inferSelect & {
   }>;
 };
 
+type PriceSearchType = typeof priceSearchTypesTable.$inferSelect;
+
 export const researchTemplatesTableColumns = (
   products: Product[],
   suppliers: Supplier[],
+  priceSearchTypes: PriceSearchType[],
 ): ColumnDef<ResearchTemplate>[] => [
   {
     id: "name",
@@ -68,6 +72,7 @@ export const researchTemplatesTableColumns = (
         template={row.original}
         products={products}
         suppliers={suppliers}
+        priceSearchTypes={priceSearchTypes}
       />
     ),
   },
@@ -77,10 +82,12 @@ function ResearchTemplateActions({
   template,
   products,
   suppliers,
+  priceSearchTypes,
 }: {
   template: ResearchTemplate;
   products: Product[];
   suppliers: Supplier[];
+  priceSearchTypes: PriceSearchType[];
 }) {
   const [open, setOpen] = useState(false);
 
@@ -95,6 +102,7 @@ function ResearchTemplateActions({
         template={template}
         products={products}
         suppliers={suppliers}
+        priceSearchTypes={priceSearchTypes}
         onSuccess={() => setOpen(false)}
       />
     </Dialog>

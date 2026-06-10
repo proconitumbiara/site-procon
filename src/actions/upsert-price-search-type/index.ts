@@ -4,14 +4,18 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 
 import { db } from "@/db";
-import { productsTable } from "@/db/schema";
+import { priceSearchTypesTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { actionClient } from "@/lib/next-safe-action";
 
-import { ErrorMessages, ErrorTypes, upsertProductSchema } from "./schema";
+import {
+  ErrorMessages,
+  ErrorTypes,
+  upsertPriceSearchTypeSchema,
+} from "./schema";
 
-export const upsertProduct = actionClient
-  .schema(upsertProductSchema)
+export const upsertPriceSearchType = actionClient
+  .schema(upsertPriceSearchTypeSchema)
   .action(async ({ parsedInput }) => {
     const session = await auth.api.getSession({
       headers: await headers(),
@@ -26,35 +30,32 @@ export const upsertProduct = actionClient
       };
     }
 
-    const [product] = await db
-      .insert(productsTable)
+    const [priceSearchType] = await db
+      .insert(priceSearchTypesTable)
       .values({
         id: parsedInput.id,
         name: parsedInput.name.trim(),
-        priceSearchTypeId: parsedInput.priceSearchTypeId,
-        categoryId: parsedInput.categoryId,
+        periodicity: parsedInput.periodicity.trim(),
         isActive: parsedInput.isActive ?? true,
       })
       .onConflictDoUpdate({
-        target: [productsTable.id],
+        target: [priceSearchTypesTable.id],
         set: {
           name: parsedInput.name.trim(),
-          priceSearchTypeId: parsedInput.priceSearchTypeId,
-          categoryId: parsedInput.categoryId,
+          periodicity: parsedInput.periodicity.trim(),
           isActive: parsedInput.isActive ?? true,
           updatedAt: new Date(),
         },
       })
       .returning({
-        id: productsTable.id,
-        name: productsTable.name,
-        priceSearchTypeId: productsTable.priceSearchTypeId,
-        categoryId: productsTable.categoryId,
-        isActive: productsTable.isActive,
+        id: priceSearchTypesTable.id,
+        name: priceSearchTypesTable.name,
+        periodicity: priceSearchTypesTable.periodicity,
+        isActive: priceSearchTypesTable.isActive,
       });
 
+    revalidatePath("/gerenciar-pesquisas/tipos");
     revalidatePath("/gerenciar-pesquisas");
-    revalidatePath(`/gerenciar-pesquisas/produtos`);
 
-    return { success: true, product };
+    return { success: true, priceSearchType };
   });

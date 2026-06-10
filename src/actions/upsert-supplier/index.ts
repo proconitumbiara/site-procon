@@ -42,6 +42,7 @@ export const upsertSupplier = actionClient
       .values({
         id: parsedInput.id,
         name: parsedInput.name.trim(),
+        priceSearchTypeId: parsedInput.priceSearchTypeId,
         address: normalizeNullableString(
           normalizeAddress(parsedInput.address ?? ""),
         ),
@@ -54,6 +55,7 @@ export const upsertSupplier = actionClient
         target: [suppliersTable.id],
         set: {
           name: parsedInput.name.trim(),
+          priceSearchTypeId: parsedInput.priceSearchTypeId,
           address: normalizeNullableString(
             normalizeAddress(parsedInput.address ?? ""),
           ),
@@ -67,12 +69,13 @@ export const upsertSupplier = actionClient
       .returning({
         id: suppliersTable.id,
         name: suppliersTable.name,
+        priceSearchTypeId: suppliersTable.priceSearchTypeId,
         address: suppliersTable.address,
         phone: suppliersTable.phone,
         isActive: suppliersTable.isActive,
       });
 
-    revalidatePath(`/gerenciar-fornecedores`);
+    revalidatePath("/gerenciar-pesquisas/fornecedores");
 
     return { success: true, supplier };
   });

@@ -28,6 +28,9 @@ export const upsertPriceSearchSchema = z.object({
     .string()
     .trim()
     .min(1, { message: "O título da pesquisa é obrigatório." }),
+  priceSearchTypeId: z
+    .string()
+    .uuid({ message: "Tipo de pesquisa inválido." }),
   summary: z.string().trim().optional(),
   coverImageUrl: z.string().trim().optional(),
   emphasis: z.boolean().optional(),

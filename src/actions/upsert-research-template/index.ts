@@ -89,6 +89,7 @@ export const upsertResearchTemplate = actionClient
         .values({
           id: parsedInput.id,
           name: parsedInput.name.trim(),
+          priceSearchTypeId: parsedInput.priceSearchTypeId,
           slug,
           description: normalizeNullableString(parsedInput.description),
           isActive: parsedInput.isActive ?? true,
@@ -97,6 +98,7 @@ export const upsertResearchTemplate = actionClient
           target: [researchTemplatesTable.id],
           set: {
             name: parsedInput.name.trim(),
+            priceSearchTypeId: parsedInput.priceSearchTypeId,
             slug,
             description: normalizeNullableString(parsedInput.description),
             isActive: parsedInput.isActive ?? true,

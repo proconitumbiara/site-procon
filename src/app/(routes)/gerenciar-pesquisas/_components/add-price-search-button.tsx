@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import {
   categoriesTable,
+  priceSearchTypesTable,
   productsTable,
   researchTemplatesTable,
   suppliersTable,
@@ -27,8 +28,10 @@ type Template = typeof researchTemplatesTable.$inferSelect & {
     supplier: typeof suppliersTable.$inferSelect;
   }>;
 };
+type PriceSearchType = typeof priceSearchTypesTable.$inferSelect;
 
 interface AddPriceSearchButtonProps {
+  priceSearchTypes: PriceSearchType[];
   suppliers: Supplier[];
   categories: Category[];
   products: Product[];
@@ -36,6 +39,7 @@ interface AddPriceSearchButtonProps {
 }
 
 const AddPriceSearchButton = ({
+  priceSearchTypes,
   suppliers,
   categories,
   products,
@@ -52,6 +56,7 @@ const AddPriceSearchButton = ({
         </Button>
       </DialogTrigger>
       <UpsertPriceSearchForm
+        priceSearchTypes={priceSearchTypes}
         suppliers={suppliers}
         categories={categories}
         products={products}

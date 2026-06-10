@@ -4,25 +4,33 @@ import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
-import { suppliersTable } from "@/db/schema";
+import { priceSearchTypesTable, suppliersTable } from "@/db/schema";
 
 import { suppliersTableColumns } from "./suppliers-table-columns";
 
 type Supplier = typeof suppliersTable.$inferSelect;
+type PriceSearchType = typeof priceSearchTypesTable.$inferSelect;
 
 interface SuppliersFiltersProps {
   suppliers: Supplier[];
+  priceSearchTypes: PriceSearchType[];
 }
 
-export default function SuppliersFilters({ suppliers }: SuppliersFiltersProps) {
+export default function SuppliersFilters({
+  suppliers,
+  priceSearchTypes,
+}: SuppliersFiltersProps) {
   const [nameFilter, setNameFilter] = useState("");
+  const [typeFilter, setTypeFilter] = useState("");
 
   const filteredSuppliers = useMemo(() => {
-    let filtered = suppliers.filter((supplier) =>
-      supplier.name.toLowerCase().includes(nameFilter.toLowerCase()),
+    let filtered = suppliers.filter(
+      (supplier) =>
+        supplier.name.toLowerCase().includes(nameFilter.toLowerCase()) &&
+        (typeFilter ? supplier.priceSearchTypeId === typeFilter : true),
     );
     // Se não há filtros, ordena por createdAT do mais novo para o mais antigo
-    if (!nameFilter) {
+    if (!nameFilter && !typeFilter) {
       filtered = [...filtered].sort((a, b) => {
         const dateA = new Date(a.createdAT).getTime();
         const dateB = new Date(b.createdAT).getTime();
@@ -30,9 +38,12 @@ export default function SuppliersFilters({ suppliers }: SuppliersFiltersProps) {
       });
     }
     return filtered;
-  }, [suppliers, nameFilter]);
+  }, [suppliers, nameFilter, typeFilter]);
 
-  const columns = useMemo(() => suppliersTableColumns(), []);
+  const columns = useMemo(
+    () => suppliersTableColumns(priceSearchTypes),
+    [priceSearchTypes],
+  );
 
   return (
     <>
@@ -44,9 +55,22 @@ export default function SuppliersFilters({ suppliers }: SuppliersFiltersProps) {
           onChange={(e) => setNameFilter(e.target.value)}
           className="rounded border p-2 text-sm"
         />
+        <select
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value)}
+          className="rounded border p-2 text-sm"
+        >
+          <option value="">Todos os tipos</option>
+          {priceSearchTypes.map((type) => (
+            <option key={type.id} value={type.id}>
+              {type.name}
+            </option>
+          ))}
+        </select>
         <Button
           onClick={() => {
             setNameFilter("");
+            setTypeFilter("");
           }}
           variant="link"
         >

@@ -17,6 +17,9 @@ export const upsertProductSchema = z.object({
     .string()
     .trim()
     .min(1, { message: "O nome do produto é obrigatório." }),
+  priceSearchTypeId: z
+    .string()
+    .uuid({ message: "Tipo de pesquisa inválido." }),
   categoryId: z.string().uuid({ message: "Categoria inválida." }),
   isActive: z.boolean().optional(),
 });

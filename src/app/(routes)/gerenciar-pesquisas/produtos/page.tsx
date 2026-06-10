@@ -36,7 +36,7 @@ const ProdutosPage = async () => {
     return <AccessDenied />;
   }
 
-  const [products, categories] = await Promise.all([
+  const [products, categories, priceSearchTypes] = await Promise.all([
     db.query.productsTable.findMany({
       orderBy: (table) => asc(table.name),
       with: {
@@ -44,6 +44,9 @@ const ProdutosPage = async () => {
       },
     }),
     db.query.categoriesTable.findMany({
+      orderBy: (table) => asc(table.name),
+    }),
+    db.query.priceSearchTypesTable.findMany({
       orderBy: (table) => asc(table.name),
     }),
   ]);
@@ -58,11 +61,18 @@ const ProdutosPage = async () => {
           </PageDescription>
         </PageHeaderContent>
         <PageActions>
-          <AddProductButton categories={categories} />
+          <AddProductButton
+            categories={categories}
+            priceSearchTypes={priceSearchTypes}
+          />
         </PageActions>
       </PageHeader>
       <PageContent>
-        <ProductsFilters products={products} categories={categories} />
+        <ProductsFilters
+          products={products}
+          categories={categories}
+          priceSearchTypes={priceSearchTypes}
+        />
       </PageContent>
     </PageContainer>
   );

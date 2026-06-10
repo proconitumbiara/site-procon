@@ -83,6 +83,7 @@ export const upsertPriceSearch = actionClient
           id: parsedInput.id,
           title: parsedInput.title.trim(),
           slug,
+          priceSearchTypeId: parsedInput.priceSearchTypeId,
           summary: normalizeNullableString(parsedInput.summary),
           coverImageUrl: normalizeNullableString(parsedInput.coverImageUrl),
           emphasis: parsedInput.emphasis ?? false,
@@ -95,6 +96,7 @@ export const upsertPriceSearch = actionClient
           set: {
             title: parsedInput.title.trim(),
             slug,
+            priceSearchTypeId: parsedInput.priceSearchTypeId,
             summary: normalizeNullableString(parsedInput.summary),
             coverImageUrl: normalizeNullableString(parsedInput.coverImageUrl),
             emphasis: parsedInput.emphasis ?? false,

@@ -5,10 +5,17 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { priceSearchTypesTable } from "@/db/schema";
 
 import UpsertSupplierForm from "./upsert-supplier-form";
 
-const AddSupplierButton = () => {
+type PriceSearchType = typeof priceSearchTypesTable.$inferSelect;
+
+interface AddSupplierButtonProps {
+  priceSearchTypes: PriceSearchType[];
+}
+
+const AddSupplierButton = ({ priceSearchTypes }: AddSupplierButtonProps) => {
   const [open, setOpen] = useState(false);
 
   return (
@@ -19,7 +26,10 @@ const AddSupplierButton = () => {
           Novo fornecedor
         </Button>
       </DialogTrigger>
-      <UpsertSupplierForm onSuccess={() => setOpen(false)} />
+      <UpsertSupplierForm
+        priceSearchTypes={priceSearchTypes}
+        onSuccess={() => setOpen(false)}
+      />
     </Dialog>
   );
 };

@@ -1,5 +1,5 @@
 import { asc, desc } from "drizzle-orm";
-import { FileStack, Package, Truck } from "lucide-react";
+import { FileStack, Layers, Package, Truck } from "lucide-react";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -29,7 +29,7 @@ const GerenciarPesquisasPage = async () => {
     redirect("/auth/sign-in");
   }
 
-  const [priceSearches, suppliers, categories, products, templates] =
+  const [priceSearches, priceSearchTypes, suppliers, categories, products, templates] =
     await Promise.all([
     db.query.priceSearchesTable.findMany({
       orderBy: (table) => desc(table.createdAT),
@@ -45,6 +45,9 @@ const GerenciarPesquisasPage = async () => {
           },
         },
       },
+    }),
+    db.query.priceSearchTypesTable.findMany({
+      orderBy: (table) => asc(table.name),
     }),
     db.query.suppliersTable.findMany({
       orderBy: (table) => asc(table.name),
@@ -104,7 +107,14 @@ const GerenciarPesquisasPage = async () => {
                 Gerenciar Templates
               </Link>
             </Button>
+            <Button variant="secondary" className="no-underline" asChild>
+              <Link href="/gerenciar-pesquisas/tipos">
+                <Layers className="mr-2 h-4 w-4" />
+                Gerenciar Tipos
+              </Link>
+            </Button>
             <AddPriceSearchButton
+              priceSearchTypes={priceSearchTypes}
               suppliers={suppliers}
               categories={categories}
               products={products}
@@ -116,6 +126,7 @@ const GerenciarPesquisasPage = async () => {
       <PageContent>
         <PriceSearchesGrid
           priceSearches={priceSearches}
+          priceSearchTypes={priceSearchTypes}
           suppliers={suppliers}
           categories={categories}
           products={products}

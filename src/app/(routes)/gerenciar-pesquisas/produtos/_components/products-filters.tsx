@@ -4,7 +4,11 @@ import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
-import { categoriesTable, productsTable } from "@/db/schema";
+import {
+  categoriesTable,
+  priceSearchTypesTable,
+  productsTable,
+} from "@/db/schema";
 
 import { productsTableColumns } from "./products-table-columns";
 
@@ -12,27 +16,32 @@ type Product = typeof productsTable.$inferSelect & {
   category: typeof categoriesTable.$inferSelect;
 };
 type Category = typeof categoriesTable.$inferSelect;
+type PriceSearchType = typeof priceSearchTypesTable.$inferSelect;
 
 interface ProductsFiltersProps {
   products: Product[];
   categories: Category[];
+  priceSearchTypes: PriceSearchType[];
 }
 
 export default function ProductsFilters({
   products,
   categories,
+  priceSearchTypes,
 }: ProductsFiltersProps) {
   const [nameFilter, setNameFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
+  const [typeFilter, setTypeFilter] = useState("");
 
   const filteredProducts = useMemo(() => {
     let filtered = products.filter(
       (product) =>
         product.name.toLowerCase().includes(nameFilter.toLowerCase()) &&
-        (categoryFilter ? product.categoryId === categoryFilter : true),
+        (categoryFilter ? product.categoryId === categoryFilter : true) &&
+        (typeFilter ? product.priceSearchTypeId === typeFilter : true),
     );
     // Se não há filtros, ordena por createdAT do mais novo para o mais antigo
-    if (!nameFilter && !categoryFilter) {
+    if (!nameFilter && !categoryFilter && !typeFilter) {
       filtered = [...filtered].sort((a, b) => {
         const dateA = new Date(a.createdAT).getTime();
         const dateB = new Date(b.createdAT).getTime();
@@ -40,11 +49,11 @@ export default function ProductsFilters({
       });
     }
     return filtered;
-  }, [products, nameFilter, categoryFilter]);
+  }, [products, nameFilter, categoryFilter, typeFilter]);
 
   const columns = useMemo(
-    () => productsTableColumns(categories),
-    [categories],
+    () => productsTableColumns(categories, priceSearchTypes),
+    [categories, priceSearchTypes],
   );
 
   return (
@@ -71,10 +80,23 @@ export default function ProductsFilters({
             </option>
           ))}
         </select>
+        <select
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value)}
+          className="rounded border p-2 text-sm"
+        >
+          <option value="">Todos os tipos</option>
+          {priceSearchTypes.map((type) => (
+            <option key={type.id} value={type.id}>
+              {type.name}
+            </option>
+          ))}
+        </select>
         <Button
           onClick={() => {
             setNameFilter("");
             setCategoryFilter("");
+            setTypeFilter("");
           }}
           variant="link"
         >

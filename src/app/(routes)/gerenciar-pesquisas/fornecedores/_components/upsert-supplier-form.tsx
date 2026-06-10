@@ -13,20 +13,34 @@ import {
   DialogFooter,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { suppliersTable } from "@/db/schema";
+import { priceSearchTypesTable, suppliersTable } from "@/db/schema";
 
 type Supplier = typeof suppliersTable.$inferSelect;
+type PriceSearchType = typeof priceSearchTypesTable.$inferSelect;
 
 interface UpsertSupplierFormProps {
   supplier?: Supplier;
+  priceSearchTypes: PriceSearchType[];
   onSuccess?: () => void;
 }
 
 const UpsertSupplierForm = ({
   supplier,
+  priceSearchTypes,
   onSuccess,
 }: UpsertSupplierFormProps) => {
+  const activeTypes = priceSearchTypes.filter((type) => type.isActive);
+  const selectableTypes = supplier
+    ? priceSearchTypes.filter(
+        (type) =>
+          type.isActive || type.id === supplier.priceSearchTypeId,
+      )
+    : activeTypes;
+  const defaultTypeId =
+    supplier?.priceSearchTypeId ?? activeTypes[0]?.id ?? "";
+
   const [name, setName] = useState(supplier?.name ?? "");
+  const [priceSearchTypeId, setPriceSearchTypeId] = useState(defaultTypeId);
   const [phone, setPhone] = useState(supplier?.phone ?? "");
   const [address, setAddress] = useState(supplier?.address ?? "");
   const [isActive, setIsActive] = useState(supplier?.isActive ?? true);
@@ -55,9 +69,14 @@ const UpsertSupplierForm = ({
       toast.error("Informe o nome do fornecedor.");
       return;
     }
+    if (!priceSearchTypeId) {
+      toast.error("Selecione um tipo de pesquisa.");
+      return;
+    }
     execute({
       id: supplier?.id,
       name: name.trim(),
+      priceSearchTypeId,
       phone: phone.trim() || undefined,
       address: address.trim() || undefined,
       isActive,
@@ -75,6 +94,21 @@ const UpsertSupplierForm = ({
           : "Cadastre um novo fornecedor."}
       </DialogDescription>
       <div className="space-y-4">
+        <div>
+          <label className="text-sm font-medium">Tipo de pesquisa</label>
+          <select
+            className="mt-1 w-full rounded-md border px-3 py-2"
+            value={priceSearchTypeId}
+            onChange={(e) => setPriceSearchTypeId(e.target.value)}
+          >
+            <option value="">Selecione um tipo</option>
+            {selectableTypes.map((type) => (
+              <option key={type.id} value={type.id}>
+                {type.name}
+              </option>
+            ))}
+          </select>
+        </div>
         <div>
           <label className="text-sm font-medium">Nome</label>
           <input

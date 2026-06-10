@@ -26,15 +26,18 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { suppliersTable } from "@/db/schema";
+import { priceSearchTypesTable, suppliersTable } from "@/db/schema";
 import { useAction } from "next-safe-action/hooks";
 import { toast } from "sonner";
 
 import UpsertSupplierForm from "./upsert-supplier-form";
 
 type Supplier = typeof suppliersTable.$inferSelect;
+type PriceSearchType = typeof priceSearchTypesTable.$inferSelect;
 
-export const suppliersTableColumns = (): ColumnDef<Supplier>[] => [
+export const suppliersTableColumns = (
+  priceSearchTypes: PriceSearchType[],
+): ColumnDef<Supplier>[] => [
   {
     id: "name",
     accessorKey: "name",
@@ -67,12 +70,23 @@ export const suppliersTableColumns = (): ColumnDef<Supplier>[] => [
     header: "Ações",
     cell: ({ row }) => {
       const supplier = row.original;
-      return <SupplierActions supplier={supplier} />;
+      return (
+        <SupplierActions
+          supplier={supplier}
+          priceSearchTypes={priceSearchTypes}
+        />
+      );
     },
   },
 ];
 
-function SupplierActions({ supplier }: { supplier: Supplier }) {
+function SupplierActions({
+  supplier,
+  priceSearchTypes,
+}: {
+  supplier: Supplier;
+  priceSearchTypes: PriceSearchType[];
+}) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const { execute: deleteSupplierAction, status: deleteStatus } = useAction(
@@ -100,6 +114,7 @@ function SupplierActions({ supplier }: { supplier: Supplier }) {
         </DialogTrigger>
         <UpsertSupplierForm
           supplier={supplier}
+          priceSearchTypes={priceSearchTypes}
           onSuccess={() => setIsEditDialogOpen(false)}
         />
       </Dialog>

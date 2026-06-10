@@ -42,6 +42,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import {
   categoriesTable,
+  priceSearchTypesTable,
   productsTable,
   researchTemplatesTable,
   suppliersTable,
@@ -62,9 +63,11 @@ type ResearchTemplate = typeof researchTemplatesTable.$inferSelect & {
     supplier: typeof suppliersTable.$inferSelect;
   }>;
 };
+type PriceSearchType = typeof priceSearchTypesTable.$inferSelect;
 
 interface UpsertPriceSearchFormProps {
   priceSearch?: PriceSearchWithRelations;
+  priceSearchTypes: PriceSearchType[];
   suppliers: Supplier[];
   categories: Category[];
   products: Product[];
@@ -80,6 +83,9 @@ const itemFormSchema = z.object({
 
 const formSchema = z.object({
   title: z.string().trim().min(1, { message: "Informe o título." }),
+  priceSearchTypeId: z
+    .string()
+    .uuid({ message: "Selecione um tipo de pesquisa." }),
   summary: z.string().trim().optional(),
   coverImageUrl: z.string().trim().optional(),
   year: z
@@ -105,10 +111,12 @@ const createEmptyItem = (productId?: string, supplierId?: string) => ({
 
 const getDefaultValues = (
   priceSearch?: PriceSearchWithRelations,
+  priceSearchTypeId?: string,
   productId?: string,
   supplierId?: string,
 ): FormValues => ({
   title: priceSearch?.title ?? "",
+  priceSearchTypeId: priceSearch?.priceSearchTypeId ?? priceSearchTypeId ?? "",
   summary: priceSearch?.summary ?? "",
   coverImageUrl: priceSearch?.coverImageUrl ?? "",
   year: (priceSearch?.year ?? new Date().getFullYear()) as number,
@@ -211,12 +219,22 @@ const buildLimitedSuppliers = (
 
 const UpsertPriceSearchForm = ({
   priceSearch,
+  priceSearchTypes,
   suppliers: initialSuppliers,
   categories: initialCategories,
   products: initialProducts,
   templates,
   onSuccess,
 }: UpsertPriceSearchFormProps) => {
+  const activeTypes = priceSearchTypes.filter((type) => type.isActive);
+  const selectableTypes = priceSearch
+    ? priceSearchTypes.filter(
+        (type) =>
+          type.isActive || type.id === priceSearch.priceSearchTypeId,
+      )
+    : activeTypes;
+  const defaultTypeId =
+    priceSearch?.priceSearchTypeId ?? activeTypes[0]?.id ?? "";
   const [supplierDialogOpen, setSupplierDialogOpen] = useState(false);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [productDialogOpen, setProductDialogOpen] = useState(false);
@@ -252,17 +270,39 @@ const UpsertPriceSearchForm = ({
     Record<number, HTMLInputElement | null>
   >({});
 
-  const initialProductId = products[0]?.id;
-  const initialSupplierId = suppliers[0]?.id;
+  const initialSuppliersByType = initialSuppliers.filter(
+    (supplier) =>
+      !defaultTypeId || supplier.priceSearchTypeId === defaultTypeId,
+  );
+  const initialProductsByType = initialProducts.filter(
+    (product) =>
+      !defaultTypeId || product.priceSearchTypeId === defaultTypeId,
+  );
+  const initialProductId = initialProductsByType[0]?.id;
+  const initialSupplierId = initialSuppliersByType[0]?.id;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: getDefaultValues(
       priceSearch,
+      defaultTypeId,
       initialProductId,
       initialSupplierId,
     ),
   });
+
+  const watchedTypeId = form.watch("priceSearchTypeId");
+  const filteredSuppliersByType = suppliers.filter(
+    (supplier) =>
+      !watchedTypeId || supplier.priceSearchTypeId === watchedTypeId,
+  );
+  const filteredProductsByType = products.filter(
+    (product) => !watchedTypeId || product.priceSearchTypeId === watchedTypeId,
+  );
+  const filteredTemplatesByType = templates.filter(
+    (template) =>
+      !watchedTypeId || template.priceSearchTypeId === watchedTypeId,
+  );
 
   const { fields, append, remove, replace } = useFieldArray({
     control: form.control,
@@ -275,7 +315,9 @@ const UpsertPriceSearchForm = ({
       return;
     }
 
-    const template = templates.find((item) => item.id === selectedTemplateId);
+    const template = filteredTemplatesByType.find(
+      (item) => item.id === selectedTemplateId,
+    );
     if (!template) {
       toast.error("Template não encontrado.");
       return;
@@ -328,7 +370,12 @@ const UpsertPriceSearchForm = ({
       );
       onSuccess?.();
       form.reset(
-        getDefaultValues(undefined, initialProductId, initialSupplierId),
+        getDefaultValues(
+          undefined,
+          defaultTypeId,
+          initialProductId,
+          initialSupplierId,
+        ),
       );
     },
     onError: (error) => {
@@ -354,7 +401,12 @@ const UpsertPriceSearchForm = ({
           setSuppliers((prev) =>
             sortByName([
               ...prev,
-              { ...newSupplier, createdAT: new Date(), updatedAt: new Date() },
+              {
+                ...newSupplier,
+                priceSearchTypeId: watchedTypeId,
+                createdAT: new Date(),
+                updatedAt: new Date(),
+              },
             ]),
           );
           toast.success("Fornecedor salvo com sucesso!");
@@ -416,6 +468,7 @@ const UpsertPriceSearchForm = ({
                 ...prev,
                 {
                   ...newProduct,
+                  priceSearchTypeId: watchedTypeId,
                   category,
                   createdAT: new Date(),
                   updatedAt: new Date(),
@@ -516,6 +569,30 @@ const UpsertPriceSearchForm = ({
                       <FormControl>
                         <Input placeholder="Nome da pesquisa" {...field} />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="priceSearchTypeId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tipo de pesquisa</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione um tipo" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {selectableTypes.map((type) => (
+                            <SelectItem key={type.id} value={type.id}>
+                              {type.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -700,7 +777,7 @@ const UpsertPriceSearchForm = ({
                         <SelectValue placeholder="Selecionar template" />
                       </SelectTrigger>
                       <SelectContent>
-                        {templates.map((template) => (
+                        {filteredTemplatesByType.map((template) => (
                           <SelectItem key={template.id} value={template.id}>
                             {template.name}
                           </SelectItem>
@@ -778,7 +855,16 @@ const UpsertPriceSearchForm = ({
                         <DialogFooter>
                           <Button
                             type="button"
-                            onClick={() => saveSupplier(supplierForm)}
+                            onClick={() => {
+                              if (!watchedTypeId) {
+                                toast.error("Selecione um tipo de pesquisa.");
+                                return;
+                              }
+                              saveSupplier({
+                                ...supplierForm,
+                                priceSearchTypeId: watchedTypeId,
+                              });
+                            }}
                             disabled={supplierStatus === "executing"}
                           >
                             {supplierStatus === "executing" ? (
@@ -885,7 +971,16 @@ const UpsertPriceSearchForm = ({
                         <DialogFooter>
                           <Button
                             type="button"
-                            onClick={() => saveProduct(productForm)}
+                            onClick={() => {
+                              if (!watchedTypeId) {
+                                toast.error("Selecione um tipo de pesquisa.");
+                                return;
+                              }
+                              saveProduct({
+                                ...productForm,
+                                priceSearchTypeId: watchedTypeId,
+                              });
+                            }}
                             disabled={
                               productStatus === "executing" ||
                               !productForm.name.trim() ||
@@ -974,11 +1069,11 @@ const UpsertPriceSearchForm = ({
                             const searchTerm = supplierSearchTerms[index] || "";
 
                             // Filtrar fornecedores
-                            let filteredSuppliers = suppliers;
+                            let filteredSuppliers = filteredSuppliersByType;
                             if (searchTerm.trim()) {
                               const term = searchTerm.toLowerCase();
-                              filteredSuppliers = suppliers.filter((s) =>
-                                s.name.toLowerCase().includes(term),
+                              filteredSuppliers = filteredSuppliersByType.filter(
+                                (s) => s.name.toLowerCase().includes(term),
                               );
                             }
 
@@ -992,7 +1087,7 @@ const UpsertPriceSearchForm = ({
                             );
 
                             const selectedSupplierLabel = field.value
-                              ? suppliers.find(
+                              ? filteredSuppliersByType.find(
                                 (supplier) => supplier.id === field.value,
                               )?.name
                               : undefined;
@@ -1120,10 +1215,10 @@ const UpsertPriceSearchForm = ({
                             const searchTerm = productSearchTerms[index] || "";
 
                             // Filtrar produtos
-                            let filteredProducts = products;
+                            let filteredProducts = filteredProductsByType;
                             if (searchTerm.trim()) {
                               const term = searchTerm.toLowerCase();
-                              filteredProducts = products.filter(
+                              filteredProducts = filteredProductsByType.filter(
                                 (p) =>
                                   p.name.toLowerCase().includes(term) ||
                                   p.category.name.toLowerCase().includes(term),
@@ -1137,7 +1232,9 @@ const UpsertPriceSearchForm = ({
                               );
 
                             const selectedProductLabel = field.value
-                              ? products.find((product) => product.id === field.value)
+                              ? filteredProductsByType.find(
+                                  (product) => product.id === field.value,
+                                )
                                 ?.name
                               : undefined;
 

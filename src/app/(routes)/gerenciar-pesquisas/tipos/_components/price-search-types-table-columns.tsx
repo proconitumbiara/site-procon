@@ -3,8 +3,10 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { useAction } from "next-safe-action/hooks";
+import { toast } from "sonner";
 
-import { deleteProduct } from "@/actions/delete-product";
+import { deletePriceSearchType } from "@/actions/delete-price-search-type";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,46 +18,25 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  categoriesTable,
-  priceSearchTypesTable,
-  productsTable,
-} from "@/db/schema";
-import { useAction } from "next-safe-action/hooks";
-import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { priceSearchTypesTable } from "@/db/schema";
 
-import UpsertProductForm from "./upsert-product-form";
+import UpsertPriceSearchTypeForm from "./upsert-price-search-type-form";
 
-type Product = typeof productsTable.$inferSelect & {
-  category: typeof categoriesTable.$inferSelect;
-};
-type Category = typeof categoriesTable.$inferSelect;
 type PriceSearchType = typeof priceSearchTypesTable.$inferSelect;
 
-export const productsTableColumns = (
-  categories: Category[],
-  priceSearchTypes: PriceSearchType[],
-): ColumnDef<Product>[] => [
+export const priceSearchTypesTableColumns = (): ColumnDef<PriceSearchType>[] => [
   {
     id: "name",
     accessorKey: "name",
     header: "Nome",
   },
   {
-    id: "category",
-    accessorKey: "category.name",
-    header: "Categoria",
-    cell: ({ row }) => row.original.category.name,
+    id: "periodicity",
+    accessorKey: "periodicity",
+    header: "Periodicidade",
   },
   {
     id: "status",
@@ -71,39 +52,29 @@ export const productsTableColumns = (
     id: "actions",
     header: "Ações",
     cell: ({ row }) => {
-      const product = row.original;
-      return (
-        <ProductActions
-          product={product}
-          categories={categories}
-          priceSearchTypes={priceSearchTypes}
-        />
-      );
+      const priceSearchType = row.original;
+      return <PriceSearchTypeActions priceSearchType={priceSearchType} />;
     },
   },
 ];
 
-function ProductActions({
-  product,
-  categories,
-  priceSearchTypes,
+function PriceSearchTypeActions({
+  priceSearchType,
 }: {
-  product: Product;
-  categories: Category[];
-  priceSearchTypes: PriceSearchType[];
+  priceSearchType: PriceSearchType;
 }) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
-  const { execute: deleteProductAction, status: deleteStatus } = useAction(
-    deleteProduct,
+  const { execute: deleteAction, status: deleteStatus } = useAction(
+    deletePriceSearchType,
     {
       onSuccess: () => {
-        toast.success("Produto inativado com sucesso!");
+        toast.success("Tipo inativado com sucesso!");
         window.location.reload();
       },
       onError: (error) => {
         const message =
-          error.error?.serverError ?? "Erro ao deletar produto.";
+          error.error?.serverError ?? "Erro ao inativar tipo de pesquisa.";
         toast.error(message);
       },
     },
@@ -111,19 +82,14 @@ function ProductActions({
 
   return (
     <div className="flex items-center gap-2">
-      <Dialog
-        open={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-      >
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogTrigger asChild>
           <Button variant="outline" size="sm">
             <Pencil className="h-4 w-4" />
           </Button>
         </DialogTrigger>
-        <UpsertProductForm
-          product={product}
-          categories={categories}
-          priceSearchTypes={priceSearchTypes}
+        <UpsertPriceSearchTypeForm
+          priceSearchType={priceSearchType}
           onSuccess={() => setIsEditDialogOpen(false)}
         />
       </Dialog>
@@ -140,17 +106,17 @@ function ProductActions({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Tem certeza que deseja inativar este produto?
+              Tem certeza que deseja inativar este tipo?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              O produto será ocultado de novos cadastros, mas o histórico das
-              pesquisas será preservado.
+              O tipo será ocultado de novos cadastros, mas o histórico será
+              preservado.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => deleteProductAction({ id: product.id })}
+              onClick={() => deleteAction({ id: priceSearchType.id })}
               disabled={deleteStatus === "executing"}
             >
               {deleteStatus === "executing" ? "Inativando..." : "Inativar"}
@@ -161,4 +127,3 @@ function ProductActions({
     </div>
   );
 }
-

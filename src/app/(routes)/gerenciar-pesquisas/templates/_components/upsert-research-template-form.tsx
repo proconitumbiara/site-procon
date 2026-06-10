@@ -33,16 +33,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { categoriesTable, productsTable, suppliersTable } from "@/db/schema";
+import {
+  categoriesTable,
+  priceSearchTypesTable,
+  productsTable,
+  suppliersTable,
+} from "@/db/schema";
 
 type Supplier = typeof suppliersTable.$inferSelect;
 type Product = typeof productsTable.$inferSelect & {
   category: typeof categoriesTable.$inferSelect;
 };
+type PriceSearchType = typeof priceSearchTypesTable.$inferSelect;
 type ResearchTemplate = {
   id: string;
   name: string;
   slug: string;
+  priceSearchTypeId: string;
   description: string | null;
   isActive: boolean;
   items: Array<{
@@ -56,6 +63,7 @@ interface UpsertResearchTemplateFormProps {
   template?: ResearchTemplate;
   suppliers: Supplier[];
   products: Product[];
+  priceSearchTypes: PriceSearchType[];
   onSuccess?: () => void;
 }
 
@@ -66,6 +74,9 @@ const itemSchema = z.object({
 
 const formSchema = z.object({
   name: z.string().trim().min(1, { message: "Informe o nome." }),
+  priceSearchTypeId: z
+    .string()
+    .uuid({ message: "Selecione um tipo de pesquisa." }),
   description: z.string().trim().optional(),
   isActive: z.boolean(),
   items: z.array(itemSchema),
@@ -82,25 +93,45 @@ const UpsertResearchTemplateForm = ({
   template,
   suppliers,
   products,
+  priceSearchTypes,
   onSuccess,
 }: UpsertResearchTemplateFormProps) => {
-  const activeProducts = products.filter((product) => product.isActive);
-  const activeSuppliers = suppliers.filter((supplier) => supplier.isActive);
+  const activeTypes = priceSearchTypes.filter((type) => type.isActive);
+  const selectableTypes = template
+    ? priceSearchTypes.filter(
+        (type) =>
+          type.isActive || type.id === template.priceSearchTypeId,
+      )
+    : activeTypes;
+  const defaultTypeId =
+    template?.priceSearchTypeId ?? activeTypes[0]?.id ?? "";
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: template?.name ?? "",
+      priceSearchTypeId: defaultTypeId,
       description: template?.description ?? "",
       isActive: template?.isActive ?? true,
       items:
         template?.items.map((item) => ({
           productId: item.productId,
           supplierId: item.supplierId,
-        })) ??
-        [createEmptyItem(activeProducts[0]?.id, activeSuppliers[0]?.id)],
+        })) ?? [createEmptyItem()],
     },
   });
+
+  const selectedTypeId = form.watch("priceSearchTypeId");
+  const activeProducts = products.filter(
+    (product) =>
+      product.isActive &&
+      (!selectedTypeId || product.priceSearchTypeId === selectedTypeId),
+  );
+  const activeSuppliers = suppliers.filter(
+    (supplier) =>
+      supplier.isActive &&
+      (!selectedTypeId || supplier.priceSearchTypeId === selectedTypeId),
+  );
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -145,6 +176,7 @@ const UpsertResearchTemplateForm = ({
     execute({
       id: template?.id,
       name: values.name,
+      priceSearchTypeId: values.priceSearchTypeId,
       description: values.description || undefined,
       isActive: values.isActive,
       items: values.items.map((item, index) => ({
@@ -193,6 +225,30 @@ const UpsertResearchTemplateForm = ({
                     <FormControl>
                       <Input placeholder="Template Dia das Mães" {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="priceSearchTypeId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tipo de pesquisa</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione um tipo" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {selectableTypes.map((type) => (
+                          <SelectItem key={type.id} value={type.id}>
+                            {type.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

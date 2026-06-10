@@ -11,19 +11,19 @@ export const ErrorMessages = {
     "Usuário não autorizado a realizar esta ação",
 } as const;
 
-export const upsertSupplierSchema = z.object({
+export const upsertPriceSearchTypeSchema = z.object({
   id: z.string().uuid().optional(),
   name: z
     .string()
     .trim()
-    .min(1, { message: "O nome do fornecedor é obrigatório." }),
-  priceSearchTypeId: z
+    .min(1, { message: "O nome do tipo é obrigatório." }),
+  periodicity: z
     .string()
-    .uuid({ message: "Tipo de pesquisa inválido." }),
-  address: z.string().trim().optional(),
-  phone: z.string().trim().optional(),
+    .trim()
+    .min(1, { message: "A periodicidade é obrigatória." }),
   isActive: z.boolean().optional(),
 });
 
-export type UpsertSupplierInput = z.infer<typeof upsertSupplierSchema>;
-
+export type UpsertPriceSearchTypeInput = z.infer<
+  typeof upsertPriceSearchTypeSchema
+>;

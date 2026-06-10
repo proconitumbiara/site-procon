@@ -1,10 +1,11 @@
 "use client";
 
 import { ChevronDown, ChevronUp, Pencil } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { priceSearchTypesTable } from "@/db/schema";
 import {
   Card,
   CardContent,
@@ -30,9 +31,11 @@ type Supplier = Parameters<typeof UpsertPriceSearchForm>[0]["suppliers"];
 type Category = Parameters<typeof UpsertPriceSearchForm>[0]["categories"];
 type Product = Parameters<typeof UpsertPriceSearchForm>[0]["products"];
 type Template = Parameters<typeof UpsertPriceSearchForm>[0]["templates"];
+type PriceSearchType = typeof priceSearchTypesTable.$inferSelect;
 
 interface PriceSearchesGridProps {
   priceSearches: PriceSearchWithRelations[];
+  priceSearchTypes: PriceSearchType[];
   suppliers: Supplier;
   categories: Category;
   products: Product;
@@ -41,6 +44,7 @@ interface PriceSearchesGridProps {
 
 const PriceSearchesGrid = ({
   priceSearches,
+  priceSearchTypes,
   suppliers,
   categories,
   products,
@@ -48,6 +52,16 @@ const PriceSearchesGrid = ({
 }: PriceSearchesGridProps) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [typeFilter, setTypeFilter] = useState("");
+
+  const filteredPriceSearches = useMemo(() => {
+    return priceSearches.filter((search) =>
+      typeFilter ? search.priceSearchTypeId === typeFilter : true,
+    );
+  }, [priceSearches, typeFilter]);
+
+  const getTypeName = (typeId: string) =>
+    priceSearchTypes.find((type) => type.id === typeId)?.name ?? "-";
 
   const toggleExpand = (id: string) => {
     setExpandedIds((prev) => {
@@ -73,7 +87,40 @@ const PriceSearchesGrid = ({
 
   return (
     <div className="space-y-6">
-      {priceSearches.map((search) => {
+      <div className="flex flex-wrap items-center gap-2">
+        <select
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value)}
+          className="rounded border p-2 text-sm"
+        >
+          <option value="">Todos os tipos</option>
+          {priceSearchTypes.map((type) => (
+            <option key={type.id} value={type.id}>
+              {type.name}
+            </option>
+          ))}
+        </select>
+        {typeFilter && (
+          <Button variant="link" onClick={() => setTypeFilter("")}>
+            Resetar filtros
+          </Button>
+        )}
+        <span className="text-muted-foreground text-sm">
+          {filteredPriceSearches.length} pesquisa
+          {filteredPriceSearches.length === 1 ? "" : "s"} encontrada
+          {filteredPriceSearches.length === 1 ? "" : "s"}
+        </span>
+      </div>
+
+      {filteredPriceSearches.length === 0 && (
+        <div className="rounded-lg border border-dashed p-8 text-center">
+          <p className="text-muted-foreground text-sm">
+            Nenhuma pesquisa encontrada para o filtro selecionado.
+          </p>
+        </div>
+      )}
+
+      {filteredPriceSearches.map((search) => {
         const isExpanded = expandedIds.has(search.id);
         return (
           <Card key={search.id} className="border">
@@ -85,6 +132,9 @@ const PriceSearchesGrid = ({
               <div className="flex-1 space-y-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <CardTitle className="text-xl">{search.title}</CardTitle>
+                  <Badge variant="outline">
+                    {getTypeName(search.priceSearchTypeId)}
+                  </Badge>
                   <Badge variant="outline">{search.year}</Badge>
                   {search.emphasis && (
                     <Badge variant="secondary">Em destaque</Badge>
@@ -128,6 +178,7 @@ const PriceSearchesGrid = ({
                   </DialogTrigger>
                   <UpsertPriceSearchForm
                     priceSearch={search}
+                    priceSearchTypes={priceSearchTypes}
                     suppliers={suppliers}
                     categories={categories}
                     products={products}

@@ -24,6 +24,9 @@ export const upsertResearchTemplateSchema = z
       .string()
       .trim()
       .min(1, { message: "O nome do template é obrigatório." }),
+    priceSearchTypeId: z
+      .string()
+      .uuid({ message: "Tipo de pesquisa inválido." }),
     description: z.string().trim().optional(),
     isActive: z.boolean().optional(),
     items: z.array(itemSchema),

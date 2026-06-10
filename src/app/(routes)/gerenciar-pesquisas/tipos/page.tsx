@@ -16,10 +16,10 @@ import { db } from "@/db";
 import { usersTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
-import AddSupplierButton from "./_components/add-supplier-button";
-import SuppliersFilters from "./_components/suppliers-filters";
+import AddPriceSearchTypeButton from "./_components/add-price-search-type-button";
+import PriceSearchTypesFilters from "./_components/price-search-types-filters";
 
-const FornecedoresPage = async () => {
+const TiposPesquisaPage = async () => {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -36,37 +36,29 @@ const FornecedoresPage = async () => {
     return <AccessDenied />;
   }
 
-  const [suppliers, priceSearchTypes] = await Promise.all([
-    db.query.suppliersTable.findMany({
-      orderBy: (table) => asc(table.name),
-    }),
-    db.query.priceSearchTypesTable.findMany({
-      orderBy: (table) => asc(table.name),
-    }),
-  ]);
+  const priceSearchTypes = await db.query.priceSearchTypesTable.findMany({
+    orderBy: (table) => asc(table.name),
+  });
 
   return (
     <PageContainer>
       <PageHeader>
         <PageHeaderContent>
-          <PageTitle>Fornecedores</PageTitle>
+          <PageTitle>Tipos de pesquisa</PageTitle>
           <PageDescription>
-            Gerencie o cadastro de fornecedores.
+            Gerencie os tipos para segmentar pesquisas, produtos, fornecedores e
+            templates.
           </PageDescription>
         </PageHeaderContent>
         <PageActions>
-          <AddSupplierButton priceSearchTypes={priceSearchTypes} />
+          <AddPriceSearchTypeButton />
         </PageActions>
       </PageHeader>
       <PageContent>
-        <SuppliersFilters
-          suppliers={suppliers}
-          priceSearchTypes={priceSearchTypes}
-        />
+        <PriceSearchTypesFilters priceSearchTypes={priceSearchTypes} />
       </PageContent>
     </PageContainer>
   );
 };
 
-export default FornecedoresPage;
-
+export default TiposPesquisaPage;

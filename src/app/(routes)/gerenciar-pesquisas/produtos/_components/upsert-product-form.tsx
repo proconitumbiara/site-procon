@@ -21,25 +21,43 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { categoriesTable, productsTable } from "@/db/schema";
+import {
+  categoriesTable,
+  priceSearchTypesTable,
+  productsTable,
+} from "@/db/schema";
 
 type Product = typeof productsTable.$inferSelect & {
   category: typeof categoriesTable.$inferSelect;
 };
 type Category = typeof categoriesTable.$inferSelect;
+type PriceSearchType = typeof priceSearchTypesTable.$inferSelect;
 
 interface UpsertProductFormProps {
   product?: Product;
   categories: Category[];
+  priceSearchTypes: PriceSearchType[];
   onSuccess?: () => void;
 }
 
 const UpsertProductForm = ({
   product,
   categories: initialCategories,
+  priceSearchTypes,
   onSuccess,
 }: UpsertProductFormProps) => {
+  const activeTypes = priceSearchTypes.filter((type) => type.isActive);
+  const selectableTypes = product
+    ? priceSearchTypes.filter(
+        (type) =>
+          type.isActive || type.id === product.priceSearchTypeId,
+      )
+    : activeTypes;
+  const defaultTypeId =
+    product?.priceSearchTypeId ?? activeTypes[0]?.id ?? "";
+
   const [name, setName] = useState(product?.name ?? "");
+  const [priceSearchTypeId, setPriceSearchTypeId] = useState(defaultTypeId);
   const [categoryId, setCategoryId] = useState(product?.categoryId ?? "");
   const [isActive, setIsActive] = useState(product?.isActive ?? true);
   const [categories, setCategories] = useState(initialCategories);
@@ -100,9 +118,14 @@ const UpsertProductForm = ({
       toast.error("Selecione uma categoria.");
       return;
     }
+    if (!priceSearchTypeId) {
+      toast.error("Selecione um tipo de pesquisa.");
+      return;
+    }
     execute({
       id: product?.id,
       name: name.trim(),
+      priceSearchTypeId,
       categoryId,
       isActive,
     });
@@ -128,6 +151,21 @@ const UpsertProductForm = ({
       </div>
       <div className="flex-1 overflow-y-auto px-6 py-4">
         <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium">Tipo de pesquisa</label>
+            <select
+              className="mt-1 w-full rounded-md border px-3 py-2"
+              value={priceSearchTypeId}
+              onChange={(e) => setPriceSearchTypeId(e.target.value)}
+            >
+              <option value="">Selecione um tipo</option>
+              {selectableTypes.map((type) => (
+                <option key={type.id} value={type.id}>
+                  {type.name}
+                </option>
+              ))}
+            </select>
+          </div>
           <div>
             <label className="text-sm font-medium">Nome</label>
             <input
