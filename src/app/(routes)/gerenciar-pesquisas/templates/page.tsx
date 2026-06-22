@@ -36,27 +36,14 @@ const TemplatesPage = async () => {
     return <AccessDenied />;
   }
 
-  const [templates, products, suppliers, priceSearchTypes] = await Promise.all([
+  const [templates, priceSearchTypes] = await Promise.all([
     db.query.researchTemplatesTable.findMany({
       orderBy: (table) => asc(table.name),
       with: {
         items: {
-          with: {
-            product: true,
-            supplier: true,
-          },
           orderBy: (table) => asc(table.sortOrder),
         },
       },
-    }),
-    db.query.productsTable.findMany({
-      orderBy: (table) => asc(table.name),
-      with: {
-        category: true,
-      },
-    }),
-    db.query.suppliersTable.findMany({
-      orderBy: (table) => asc(table.name),
     }),
     db.query.priceSearchTypesTable.findMany({
       orderBy: (table) => asc(table.name),
@@ -74,18 +61,12 @@ const TemplatesPage = async () => {
           </PageDescription>
         </PageHeaderContent>
         <PageActions>
-          <AddResearchTemplateButton
-            products={products}
-            suppliers={suppliers}
-            priceSearchTypes={priceSearchTypes}
-          />
+          <AddResearchTemplateButton />
         </PageActions>
       </PageHeader>
       <PageContent>
         <ResearchTemplatesFilters
           templates={templates}
-          products={products}
-          suppliers={suppliers}
           priceSearchTypes={priceSearchTypes}
         />
       </PageContent>

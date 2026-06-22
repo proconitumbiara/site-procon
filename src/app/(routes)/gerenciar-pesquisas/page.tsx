@@ -29,8 +29,7 @@ const GerenciarPesquisasPage = async () => {
     redirect("/auth/sign-in");
   }
 
-  const [priceSearches, priceSearchTypes, suppliers, categories, products, templates] =
-    await Promise.all([
+  const [priceSearches, priceSearchTypes] = await Promise.all([
     db.query.priceSearchesTable.findMany({
       orderBy: (table) => desc(table.createdAT),
       with: {
@@ -48,33 +47,6 @@ const GerenciarPesquisasPage = async () => {
     }),
     db.query.priceSearchTypesTable.findMany({
       orderBy: (table) => asc(table.name),
-    }),
-    db.query.suppliersTable.findMany({
-      orderBy: (table) => asc(table.name),
-      where: (table, { eq }) => eq(table.isActive, true),
-    }),
-    db.query.categoriesTable.findMany({
-      orderBy: (table) => asc(table.name),
-    }),
-    db.query.productsTable.findMany({
-      orderBy: (table) => asc(table.name),
-      where: (table, { eq }) => eq(table.isActive, true),
-      with: {
-        category: true,
-      },
-    }),
-    db.query.researchTemplatesTable.findMany({
-      orderBy: (table) => asc(table.name),
-      where: (table, { eq }) => eq(table.isActive, true),
-      with: {
-        items: {
-          with: {
-            product: true,
-            supplier: true,
-          },
-          orderBy: (table) => asc(table.sortOrder),
-        },
-      },
     }),
   ]);
 
@@ -113,13 +85,7 @@ const GerenciarPesquisasPage = async () => {
                 Gerenciar Tipos
               </Link>
             </Button>
-            <AddPriceSearchButton
-              priceSearchTypes={priceSearchTypes}
-              suppliers={suppliers}
-              categories={categories}
-              products={products}
-              templates={templates}
-            />
+            <AddPriceSearchButton />
           </div>
         </PageActions>
       </PageHeader>
@@ -127,10 +93,6 @@ const GerenciarPesquisasPage = async () => {
         <PriceSearchesGrid
           priceSearches={priceSearches}
           priceSearchTypes={priceSearchTypes}
-          suppliers={suppliers}
-          categories={categories}
-          products={products}
-          templates={templates}
         />
       </PageContent>
     </PageContainer>

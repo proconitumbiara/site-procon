@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronDown, ChevronUp, Pencil } from "lucide-react";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +14,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -25,32 +25,17 @@ import {
 import { formatCentavosToBRL, formatDate } from "@/lib/formatters";
 import { PriceSearchWithRelations } from "@/types/content-management";
 
-import UpsertPriceSearchForm from "./upsert-price-search-form";
-
-type Supplier = Parameters<typeof UpsertPriceSearchForm>[0]["suppliers"];
-type Category = Parameters<typeof UpsertPriceSearchForm>[0]["categories"];
-type Product = Parameters<typeof UpsertPriceSearchForm>[0]["products"];
-type Template = Parameters<typeof UpsertPriceSearchForm>[0]["templates"];
 type PriceSearchType = typeof priceSearchTypesTable.$inferSelect;
 
 interface PriceSearchesGridProps {
   priceSearches: PriceSearchWithRelations[];
   priceSearchTypes: PriceSearchType[];
-  suppliers: Supplier;
-  categories: Category;
-  products: Product;
-  templates: Template;
 }
 
 const PriceSearchesGrid = ({
   priceSearches,
   priceSearchTypes,
-  suppliers,
-  categories,
-  products,
-  templates,
 }: PriceSearchesGridProps) => {
-  const [editingId, setEditingId] = useState<string | null>(null);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [typeFilter, setTypeFilter] = useState("");
 
@@ -166,26 +151,12 @@ const PriceSearchesGrid = ({
                     </>
                   )}
                 </Button>
-                <Dialog
-                  open={editingId === search.id}
-                  onOpenChange={(open) => setEditingId(open ? search.id : null)}
-                >
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <Pencil className="h-4 w-4" />
-                      Editar
-                    </Button>
-                  </DialogTrigger>
-                  <UpsertPriceSearchForm
-                    priceSearch={search}
-                    priceSearchTypes={priceSearchTypes}
-                    suppliers={suppliers}
-                    categories={categories}
-                    products={products}
-                    templates={templates}
-                    onSuccess={() => setEditingId(null)}
-                  />
-                </Dialog>
+                <Button variant="outline" size="sm" asChild>
+                  <Link href={`/gerenciar-pesquisas/${search.id}/edit`}>
+                    <Pencil className="h-4 w-4" />
+                    Editar
+                  </Link>
+                </Button>
               </div>
             </CardHeader>
             {isExpanded && (

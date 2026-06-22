@@ -12,27 +12,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  categoriesTable,
   priceSearchTypesTable,
-  productsTable,
   researchTemplatesTable,
-  suppliersTable,
 } from "@/db/schema";
 
 import { researchTemplatesTableColumns } from "./research-templates-table-columns";
 
-type Supplier = typeof suppliersTable.$inferSelect;
-type Product = typeof productsTable.$inferSelect & {
-  category: typeof categoriesTable.$inferSelect;
-};
 type ResearchTemplate = typeof researchTemplatesTable.$inferSelect & {
   items: Array<{
     id: string;
     productId: string;
     supplierId: string;
     sortOrder: number;
-    product: typeof productsTable.$inferSelect;
-    supplier: typeof suppliersTable.$inferSelect;
   }>;
 };
 
@@ -40,15 +31,11 @@ type PriceSearchType = typeof priceSearchTypesTable.$inferSelect;
 
 interface ResearchTemplatesFiltersProps {
   templates: ResearchTemplate[];
-  products: Product[];
-  suppliers: Supplier[];
   priceSearchTypes: PriceSearchType[];
 }
 
 const ResearchTemplatesFilters = ({
   templates,
-  products,
-  suppliers,
   priceSearchTypes,
 }: ResearchTemplatesFiltersProps) => {
   const [nameFilter, setNameFilter] = useState("");
@@ -75,10 +62,7 @@ const ResearchTemplatesFilters = ({
     });
   }, [templates, nameFilter, statusFilter, typeFilter]);
 
-  const columns = useMemo(
-    () => researchTemplatesTableColumns(products, suppliers, priceSearchTypes),
-    [products, suppliers, priceSearchTypes],
-  );
+  const columns = useMemo(() => researchTemplatesTableColumns(), []);
 
   return (
     <>

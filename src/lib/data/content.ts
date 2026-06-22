@@ -6,6 +6,7 @@ import {
   newsTable,
   priceSearchesTable,
   projectsTable,
+  researchTemplatesTable,
   servicesTable,
 } from "@/db/schema";
 
@@ -224,21 +225,23 @@ export async function getAllPriceSearches() {
   });
 }
 
+const priceSearchWithItemsQuery = {
+  items: {
+    with: {
+      product: {
+        with: {
+          category: true,
+        },
+      },
+      supplier: true,
+    },
+  },
+} as const;
+
 export async function getPriceSearchBySlug(slug: string) {
   const priceSearch = await db.query.priceSearchesTable.findFirst({
     where: (priceSearch, { eq }) => eq(priceSearch.slug, slug),
-    with: {
-      items: {
-        with: {
-          product: {
-            with: {
-              category: true,
-            },
-          },
-          supplier: true,
-        },
-      },
-    },
+    with: priceSearchWithItemsQuery,
   });
 
   if (!priceSearch) {
@@ -246,4 +249,38 @@ export async function getPriceSearchBySlug(slug: string) {
   }
 
   return priceSearch;
+}
+
+export async function getPriceSearchById(id: string) {
+  const priceSearch = await db.query.priceSearchesTable.findFirst({
+    where: (priceSearch, { eq }) => eq(priceSearch.id, id),
+    with: priceSearchWithItemsQuery,
+  });
+
+  if (!priceSearch) {
+    return null;
+  }
+
+  return priceSearch;
+}
+
+export async function getResearchTemplateById(id: string) {
+  const template = await db.query.researchTemplatesTable.findFirst({
+    where: (template, { eq }) => eq(template.id, id),
+    with: {
+      items: {
+        with: {
+          product: true,
+          supplier: true,
+        },
+        orderBy: (table, { asc }) => [asc(table.sortOrder)],
+      },
+    },
+  });
+
+  if (!template) {
+    return null;
+  }
+
+  return template;
 }
